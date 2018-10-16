@@ -3,8 +3,8 @@
 ## Maintainer
 Oliver Bründler [oliver.bruendler@psi.ch]
 
-## Authors
-Oliver Bründler [oliver.bruendler@psi.ch]
+## License
+This library is published under [PSI HDL Library License](License.txt), which is [LGPL](LGPL2_1.txt) plus some additional exceptions to clarify the LGPL terms in the context of firmware development.
 
 ## Changelog
 See [Changelog](Changelog.md)
@@ -32,8 +32,8 @@ The required folder structure looks as given below (folder names must be matched
 
 Alternatively the repository [psi\_fpga\_all](https://github.com/paulscherrerinstitute/psi_fpga_all) can be used. This repo contains all FPGA related repositories as submodules in the correct folder structure.
 * VHDL
-  * [psi\_common](https://github.com/paulscherrerinstitute/psi_common)
-  * [psi\_tb](https://github.com/paulscherrerinstitute/psi_tb)
+  * [psi\_common](https://github.com/paulscherrerinstitute/psi_common) (2.0.0 or hgiher)
+  * [**psi\_tb**](https://github.com/paulscherrerinstitute/psi_tb)
 
 ## Tagging Policy
 Stable releases are tagged in the form *major*.*minor*.*bugfix*. 
