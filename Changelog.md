@@ -3,6 +3,7 @@
 * First open source release (older history not kept)
 * Changes (not reverse compatible)
   * Renamed procedures in psi\_tb\_textfile\_pkg for consistency
+  * Changed data format of psi\_tb\_textfile\_pkg to integer in order to support GHDL
 
 ## 1.3.0
 

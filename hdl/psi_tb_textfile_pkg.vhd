@@ -42,7 +42,7 @@ use work.psi_tb_txt_util.all;
 ------------------------------------------------------------------------------
 package psi_tb_textfile_pkg is
 
-	type TextfileData_t is array (natural range <>) of std_logic_vector;
+	type TextfileData_t is array (natural range <>) of integer;
 	--type TextfileFormat_t is array (natural range <>) of PsiFixFmt_t;
 	type TextfileName_t is array (natural range <>) of string;
 
@@ -50,6 +50,7 @@ package psi_tb_textfile_pkg is
 	signal PsiTextfile_SigOne       : std_logic := '1';
 	signal PsiTextfile_SigUnused    : std_logic;
 	signal PsiTextfile_SigUnusedVec : std_logic_vector(0 downto 0);
+	signal PsiTextfile_SigUnusedData	: TextfileData_t(0 downto 0);
 
 	-- Read a textfile and apply it to signals column by column
 	procedure ApplyTextfileContent(signal Clk  : in std_logic;
@@ -68,7 +69,6 @@ package psi_tb_textfile_pkg is
 	                                 signal Data   : in TextfileData_t;
 	                                 Filepath      : in string;
 	                                 ClkPerSpl     : in positive := 1;
-	                                 SignedCompare : in boolean  := true;
 	                                 ErrorPrefix   : in string   := "###ERROR###";
 	                                 MaxLines      : in integer  := -1; -- -1 = infinite, else number of lines		
 	                                 IgnoreLines   : in natural  := 0);
@@ -78,9 +78,7 @@ package psi_tb_textfile_pkg is
 	                         signal Vld        : in std_logic;
 	                         signal Data       : in TextfileData_t;
 	                         constant nb_data  : integer;
-	                         constant num_rep  : string    := "int";
 	                         constant time_sim : boolean   := true;
-	                         --Fmt               : in TextfileFormat_t;
 	                         Name              : in TextfileName_t;
 	                         spacer            : in string := " , ";
 	                         Filepath          : in string := "/data/processing_data.txt"); --filepath & name
@@ -118,7 +116,7 @@ package body psi_tb_textfile_pkg is
 				Vld <= '1';
 				for idx in 0 to Data'length - 1 loop
 					read(ln, Spl);
-					Data(idx) <= std_logic_vector(to_signed(Spl, Data(idx)'length));
+					Data(idx) <= Spl;
 				end loop;
 				wait until rising_edge(Clk) and Rdy = '1';
 				if ClkPerSpl > 1 then
@@ -143,7 +141,6 @@ package body psi_tb_textfile_pkg is
 	                                 signal Data   : in TextfileData_t;
 	                                 Filepath      : in string;
 	                                 ClkPerSpl     : in positive := 1;
-	                                 SignedCompare : in boolean := true;
 	                                 ErrorPrefix   : in string := "###ERROR###";
 	                                 MaxLines      : in integer := -1;
 	                                 IgnoreLines   : in natural := 0) is
@@ -171,11 +168,7 @@ package body psi_tb_textfile_pkg is
 				colNr := 0;
 				for idx in 0 to Data'length - 1 loop
 					read(ln, Spl);
-					if SignedCompare then
-						Sig := to_integer(signed(Data(idx)));
-					else
-						Sig := to_integer(unsigned(Data(idx)));
-					end if;
+					Sig := Data(idx);
 					assert Sig = Spl
 					report ErrorPrefix & ": Wrong Sample, line=" & integer'image(lineNr) & " column=" & integer'image(colNr) & LF &
 							   " --> Expected " & integer'image(Spl) & " [0x" & hstr(std_logic_vector(to_signed(Spl, 32))) & "]" & LF &
@@ -213,7 +206,6 @@ package body psi_tb_textfile_pkg is
 	                         signal Vld        : in std_logic;
 	                         signal Data       : in TextfileData_t;
 	                         constant nb_data  : integer;
-	                         constant num_rep  : string := "int";
 	                         constant time_sim : boolean := true;
 	                         --Fmt               : in TextfileFormat_t;
 	                         Name              : in TextfileName_t;
@@ -225,11 +217,6 @@ package body psi_tb_textfile_pkg is
 		variable file_status : file_open_status := MODE_ERROR;
 		constant time_simu	 : string := "time_simulation";
 	begin
-
-	--assert (num_rep = "real" or num_rep = "slv" or num_rep = "int" or num_rep = "hex")
-	assert (num_rep = "slv" or num_rep = "int" or num_rep = "hex")
-	--report "### ERROR ###: psi_tb_text_file_pkg: number representation not [slv , real, int, hex] " severity error;
-	report "### ERROR ###: psi_tb_text_file_pkg: number representation not [slv , int, hex] " severity error;
 
 	while lineNr <= nb_data + 2 loop
 		wait until rising_edge(Clk) and Vld = '1';
@@ -261,103 +248,25 @@ package body psi_tb_textfile_pkg is
 				writeline(fp, ln);
 				lineNr := lineNr + 1;
 			end if;
-		--elsif lineNr = 2 then
-		--	if time_sim = false then
-		--		for j in 0 to Data'length - 1 loop
-		--			if j = Data'length - 1 then
-		--				write(ln, "(" & to_string(Fmt(j).S) & "," & to_string(Fmt(j).I) & "," & to_string(Fmt(j).F) & ")");
-		--			else
-		--				write(ln, "(" & to_string(Fmt(j).S) & "," & to_string(Fmt(j).I) & "," & to_string(Fmt(j).F) & ")");
-		--				write(ln, spacer);
-		--			end if;
-		--		end loop;
-		--		writeline(fp, ln);
-		--		lineNr := lineNr + 1;
-		--	else
-		--		for j in 0 to Data'length loop
-		--			if j = Data'length then
-		--				write(ln, now);
-		--			else
-		--				write(ln, "(" & to_string(Fmt(j).S) & "," & to_string(Fmt(j).I) & "," & to_string(Fmt(j).F) & ")");
-		--				write(ln, spacer);
-		--			end if;
-		--		end loop;
-		--		writeline(fp, ln);
-		--		lineNr := lineNr + 1;
-		--	end if;
 		else
 			if time_sim = false then
 				for j in 0 to Data'length - 1 loop
-					--if num_rep = "real" then
-					--	if j = Data'length - 1 then
-					--		write(ln, to_string(PsiFixToReal(Data(j), Fmt(j))));
-					--	else
-					--		write(ln, to_string(PsiFixToReal(Data(j), Fmt(j))));
-					--		write(ln, spacer);
-					--	end if;
-
-					--elsif num_rep = "slv" then
-					if num_rep = "slv" then
-						if j = Data'length - 1 then
-							write(ln, Data(j));
-						else
-							write(ln, Data(j));
-							write(ln, spacer);
-						end if;
-
-					elsif num_rep = "int" then
-						if j = Data'length - 1 then
-							write(ln, to_string(to_integer(signed(Data(j)))));
-						else
-							write(ln, to_string(to_integer(signed(Data(j)))));
-							write(ln, spacer);
-						end if;
-
-					elsif num_rep = "hex" then
-						if j = Data'length - 1 then
-							write(ln, hstr(Data(j)));
-						else
-							write(ln, hstr(Data(j)));
-							write(ln, spacer);
-						end if;
+					if j = Data'length - 1 then
+						write(ln, to_string(Data(j)));
+					else
+						write(ln, to_string(Data(j)));
+						write(ln, spacer);
 					end if;
 				end loop;
 				writeline(fp, ln);
 				lineNr := lineNr + 1;
 			else
 				for j in 0 to Data'length loop
-					--if num_rep = "real" then
-					--	if j = Data'length then
-					--		write(ln, now);
-					--	else
-					--		write(ln, to_string(PsiFixToReal(Data(j), Fmt(j))));
-					--		write(ln, spacer);
-					--	end if;
-
-					--elsif num_rep = "slv" then
-					if num_rep = "slv" then
-						if j = Data'length then
-							write(ln, now);
-						else
-							write(ln, Data(j));
-							write(ln, spacer);
-						end if;
-
-					elsif num_rep = "int" then
-						if j = Data'length then
-							write(ln, now);
-						else
-							write(ln, to_string(to_integer(signed(Data(j)))));
-							write(ln, spacer);
-						end if;
-
-					elsif num_rep = "hex" then
-						if j = Data'length then
-							write(ln, now);
-						else
-							write(ln, hstr(Data(j)));
-							write(ln, spacer);
-						end if;
+					if j = Data'length then
+						write(ln, now);
+					else
+						write(ln, to_string(Data(j)));
+						write(ln, spacer);
 					end if;
 				end loop;
 				writeline(fp, ln);
