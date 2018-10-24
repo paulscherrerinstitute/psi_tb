@@ -49,7 +49,13 @@ package psi_tb_compare_pkg is
 							Actual		: in real;
 							Msg			: in string;
 							Tolerance	: in real := 0.0;
-							Prefix		: in string	:= "###ERROR###: ");								
+							Prefix		: in string	:= "###ERROR###: ");	
+
+	procedure TimeCompare(	Expected 	: in time;
+							Actual		: in time;
+							Msg			: in string;
+							Tolerance	: in time := 0.0 us;
+							Prefix		: in string	:= "###ERROR###: ");							
 										
 	
 end psi_tb_compare_pkg;
@@ -150,6 +156,21 @@ package body psi_tb_compare_pkg is
 							Actual		: in real;
 							Msg			: in string;
 							Tolerance	: in real := 0.0;
+							Prefix		: in string	:= "###ERROR###: ") is 
+	begin
+		assert (Actual >= Expected-Tolerance) and (Actual <= Expected+Tolerance)
+				report 	Prefix & Msg & 
+						" [Expected " & to_string(Expected) & 
+						", Received " & to_string(Actual) & 
+						", Tolerance " & to_string(Tolerance) & "]"
+				severity error;
+	end procedure;	
+
+	-- *** TimeCompare ***
+	procedure TimeCompare(	Expected 	: in time;
+							Actual		: in time;
+							Msg			: in string;
+							Tolerance	: in time := 0.0 us;
 							Prefix		: in string	:= "###ERROR###: ") is 
 	begin
 		assert (Actual >= Expected-Tolerance) and (Actual <= Expected+Tolerance)
