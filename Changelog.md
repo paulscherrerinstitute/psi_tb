@@ -1,3 +1,8 @@
+## 2.1.0
+
+* Added Features
+  * Added compare pfocedure for time in psi\_tb\_compare\_pkg
+
 ## 2.0.0
 
 * First open source release (older history not kept)
