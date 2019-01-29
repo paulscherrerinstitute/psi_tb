@@ -21,42 +21,68 @@ package psi_tb_compare_pkg is
 
 	-- returns an index string in the form "[3]"
 	function IndexString(	Index 		: integer) return string;
-
+		
+	-- std_logic_vector compare to integer
 	procedure StdlvCompareInt (	Expected	: in integer;
 								Actual		: in std_logic_vector;
 								Msg			: in string;
 								IsSigned	: in boolean := true;
 								Tolerance	: in integer := 0;
 								Prefix		: in string	:= "###ERROR###: ");
-								
-	procedure StdlvCompareStdlv (	Expected	: in std_logic_vector;
-									Actual		: in std_logic_vector;
-									Msg			: in string;
-									Prefix		: in string	:= "###ERROR###: ");	
+	
+	-- std_logic_vector compare to std_logic_vector							
+	procedure StdlvCompareStdlv (Expected	: in std_logic_vector;
+								 Actual		: in std_logic_vector;
+								 Msg		: in string;
+								 Prefix		: in string	:= "###ERROR###: ");	
 
+	-- std_logic compare std_logic
 	procedure StdlCompare(	Expected 	: in integer range 0 to 1;
 							Actual		: in std_logic;
 							Msg			: in string;
 							Prefix		: in string	:= "###ERROR###: ");
-							
+	
+	-- integer compare to integer					
 	procedure IntCompare(	Expected 	: in integer;
 							Actual		: in integer;
 							Msg			: in string;
 							Tolerance	: in integer := 0;
 							Prefix		: in string	:= "###ERROR###: ");	
-							
+	
+	-- real compare to real						
 	procedure RealCompare(	Expected 	: in real;
 							Actual		: in real;
 							Msg			: in string;
 							Tolerance	: in real := 0.0;
 							Prefix		: in string	:= "###ERROR###: ");	
-
-	procedure TimeCompare(	Expected 	: in time;
-							Actual		: in time;
+	
+	-- signed compare to signed																
+	procedure SignCompare (	Expected	: in signed;
+							Actual		: in signed;
 							Msg			: in string;
-							Tolerance	: in time := 0.0 us;
-							Prefix		: in string	:= "###ERROR###: ");							
-										
+							Tolerance	: in integer := 0;
+							Prefix		: in string	:= "###ERROR###: ");	
+	
+	-- unsigned compare to unsigned						
+	procedure UsignCompare (Expected	: in unsigned;
+							Actual		: in unsigned;
+							Msg			: in string;
+							Tolerance	: in integer := 0;
+							Prefix		: in string	:= "###ERROR###: ");	
+	
+	-- signed compare to integer						
+	procedure SignCompareInt (	Expected	: in integer;
+								Actual		: in signed;
+								Msg			: in string;
+								Tolerance	: in integer := 0;
+								Prefix		: in string	:= "###ERROR###: ");	
+	
+	-- unsigned compare to integer						
+	procedure UsignCompareInt (	Expected	: in integer;
+								Actual		: in unsigned;
+								Msg			: in string;
+								Tolerance	: in integer := 0;
+								Prefix		: in string	:= "###ERROR###: ");																			
 	
 end psi_tb_compare_pkg;
 
@@ -165,12 +191,12 @@ package body psi_tb_compare_pkg is
 						", Tolerance " & to_string(Tolerance) & "]"
 				severity error;
 	end procedure;	
-
-	-- *** TimeCompare ***
-	procedure TimeCompare(	Expected 	: in time;
-							Actual		: in time;
+	
+	-- *** SignCompare ***
+	procedure SignCompare(	Expected 	: in signed;
+							Actual		: in signed;
 							Msg			: in string;
-							Tolerance	: in time := 0.0 us;
+							Tolerance	: in integer := 0;
 							Prefix		: in string	:= "###ERROR###: ") is 
 	begin
 		assert (Actual >= Expected-Tolerance) and (Actual <= Expected+Tolerance)
@@ -179,7 +205,52 @@ package body psi_tb_compare_pkg is
 						", Received " & to_string(Actual) & 
 						", Tolerance " & to_string(Tolerance) & "]"
 				severity error;
-	end procedure;		
+	end procedure;
+	
+	-- *** UsignCompare ***
+	procedure UsignCompare(	Expected 	: in unsigned;
+							Actual		: in unsigned;
+							Msg			: in string;
+							Tolerance	: in integer := 0;
+							Prefix		: in string	:= "###ERROR###: ") is 
+	begin
+		assert (Actual >= Expected-Tolerance) and (Actual <= Expected+Tolerance)
+				report 	Prefix & Msg & 
+						" [Expected " & to_string(Expected) & 
+						", Received " & to_string(Actual) & 
+						", Tolerance " & to_string(Tolerance) & "]"
+				severity error;
+	end procedure;
+	
+	-- *** SignCompareInt ***
+	procedure SignCompareInt (	Expected	: in integer;
+								Actual		: in signed;
+								Msg			: in string;
+								Tolerance	: in integer := 0;
+								Prefix		: in string	:= "###ERROR###: ") is
+		begin		
+			StdlvCompareInt (	Expected	=> Expected,
+								Actual		=> std_logic_vector(Actual),
+								Msg			=> Msg,
+								IsSigned	=> true,
+								Tolerance	=> Tolerance,
+								Prefix		=> Prefix);			
+	end procedure;	
+	
+	-- *** UsignCompareInt ***
+	procedure UsignCompareInt (	Expected	: in integer;
+								Actual		: in unsigned;
+								Msg			: in string;
+								Tolerance	: in integer := 0;
+								Prefix		: in string	:= "###ERROR###: ") is
+		begin		
+			StdlvCompareInt (	Expected	=> Expected,
+								Actual		=> std_logic_vector(Actual),
+								Msg			=> Msg,
+								IsSigned	=> false,
+								Tolerance	=> Tolerance,
+								Prefix		=> Prefix);
+	end procedure;	
 	
 end psi_tb_compare_pkg;
 
