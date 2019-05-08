@@ -65,15 +65,15 @@ package psi_tb_activity_pkg is
 								signal str          : out std_logic); 		-- str
 	
 	-- check if stdlv is arrived within a defined period of time
-	procedure WaitForValueStdlv(TgtVal 			: std_logic_vector; 		-- target value
-								ExpVal			: std_logic_vector; 		-- expected value
+	procedure WaitForValueStdlv(constant TgtVal	: std_logic_vector; 		-- target value
+								signal ExpVal	: in std_logic_vector; 		-- expected value
 								timeout	  		: time;						-- time to wait for
 								msg		  		: string;					-- msg to display
 								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.
 							
 	-- check if std is arrived within a defined period of time
-	procedure WaitForValueStdl(	TgtVal 			: std_logic; 				-- target value
-								ExpVal			: std_logic; 				-- expected value
+	procedure WaitForValueStdl(	constant TgtVal : std_logic; 				-- target value
+								signal ExpVal	: in std_logic; 			-- expected value
 								timeout	  		: time;						-- time to wait for
 								msg		  		: string;					-- msg to display
 								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.						
