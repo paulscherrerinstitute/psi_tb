@@ -58,11 +58,25 @@ package psi_tb_activity_pkg is
 
 	-- Strobe generator
 	procedure GenerateStrobe(	constant freq_clock : real      := 100.0E6; -- in Hz
-								constant freq_str   : real      := 1.0E6; -- in Hz
-								constant rst_pol_g  : std_logic := '1'; -- reset polarity
-								signal rst          : in std_logic; -- rst
-								signal clk          : in std_logic; -- clk
-								signal str          : out std_logic); -- str
+								constant freq_str   : real      := 1.0E6; 	-- in Hz
+								constant rst_pol_g  : std_logic := '1'; 	-- reset polarity
+								signal rst          : in std_logic; 		-- rst
+								signal clk          : in std_logic; 		-- clk
+								signal str          : out std_logic); 		-- str
+	
+	-- check if stdlv is arrived within a defined period of time
+	procedure WaitForValueStdlv(TgtVal 			: std_logic_vector; 		-- target value
+								ExpVal			: std_logic_vector; 		-- expected value
+								timeout	  		: time;						-- time to wait for
+								msg		  		: string;					-- msg to display
+								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.
+							
+	-- check if std is arrived within a defined period of time
+	procedure WaitForValueStdl(	TgtVal 			: std_logic; 				-- target value
+								ExpVal			: std_logic; 				-- expected value
+								timeout	  		: time;						-- time to wait for
+								msg		  		: string;					-- msg to display
+								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.						
 
 end psi_tb_activity_pkg;
 
@@ -180,6 +194,36 @@ package body psi_tb_activity_pkg is
 			end if;
 		end if;
 		end loop;
+	end procedure;
+
+	-- *** Wait for Standard logic vector to happen ***
+	procedure WaitForValueStdlv(TgtVal			: std_logic_vector;
+								ExpVal			: std_logic_vector;
+								timeout	  		: time;
+								msg		  		: string;
+								signal tb_run 	: out boolean) is
+	begin
+		wait until ExpVal = TgtVal for timeout;
+		if ExpVal /= TgtVal then
+			report "###ERROR###: target state not reached - " & msg severity error;
+			tb_run <= false;
+			wait;
+		end if;
+	end procedure;
+	
+	-- *** Wait for Standard logic to happen ***
+	procedure WaitForValueStdl(	TgtVal			: std_logic;
+								ExpVal			: std_logic;
+								timeout	  		: time;
+								msg		  		: string;
+								signal tb_run 	: out boolean) is
+	begin
+		wait until ExpVal = TgtVal for timeout;
+		if ExpVal /= TgtVal then
+			report "###ERROR###: target state not reached - " & msg severity error;
+			tb_run <= false;
+			wait;
+		end if;
 	end procedure;
 
 end psi_tb_activity_pkg;
