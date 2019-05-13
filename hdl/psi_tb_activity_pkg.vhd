@@ -65,17 +65,19 @@ package psi_tb_activity_pkg is
 								signal str   : out std_logic); 			-- str
 	
 	-- check if stdlv is arrived within a defined period of time
-	procedure WaitForValueStdlv(TgtVal			: in std_logic_vector; 		-- target value
+	procedure WaitForValueStdlv(signal Sig		: in std_logic_vector; 		-- Signal to check
 								ExpVal			: in std_logic_vector; 		-- expected value
-								timeout	  		: in time;					-- time to wait for
-								msg		  		: in string;				-- msg to display
+								Timeout	  		: in time;					-- time to wait for
+								Msg		  		: in string;				-- msg to display
+								Prefix     		: in string := "###ERROR###: ";
 								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.
 							
 	-- check if std is arrived within a defined period of time
-	procedure WaitForValueStdl(	TgtVal 			: in std_logic; 			-- target value
+	procedure WaitForValueStdl(	signal Sig		: in std_logic; 			-- Signal to check
 								ExpVal			: in std_logic; 			-- expected value
-								timeout	  		: in time;					-- time to wait for
-								msg		  		: in string;				-- msg to display
+								Timeout	  		: in time;					-- time to wait for
+								Msg		  		: in string;				-- msg to display
+								Prefix     		: in string := "###ERROR###: ";
 								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.						
 
 end psi_tb_activity_pkg;
@@ -197,30 +199,40 @@ package body psi_tb_activity_pkg is
 	end procedure;
 
 	-- *** Wait for Standard logic vector to happen ***
-	procedure WaitForValueStdlv(TgtVal			: in std_logic_vector;
+	procedure WaitForValueStdlv(signal Sig		: in std_logic_vector;
 								ExpVal			: in std_logic_vector;
-								timeout	  		: in time;
-								msg		  		: in string;
+								Timeout	  		: in time;
+								Msg		  		: in string;
+								Prefix     		: in string := "###ERROR###: ";
 								signal tb_run 	: out boolean) is
 	begin
-		wait until ExpVal = TgtVal for timeout;
-		if ExpVal /= TgtVal then
-			report "###ERROR###: target state not reached - " & msg severity error;
+		wait until ExpVal = Sig for timeout;
+		if ExpVal /= Sig then
+			report 	Prefix & Msg & 
+				" Target state not reached" &
+				" [Expected " & str(ExpVal) & "(0x" & hstr(ExpVal) & ")" &
+				", Received " & str(Sig) & "(0x" & hstr(Sig) & ")" & "]"
+				severity error;
 			tb_run <= false;
 			wait;
 		end if;
 	end procedure;
 	
 	-- *** Wait for Standard logic to happen ***
-	procedure WaitForValueStdl(	TgtVal			: in std_logic;
+	procedure WaitForValueStdl(	signal Sig		: in std_logic;
 								ExpVal			: in std_logic;
-								timeout	  		: in time;
-								msg		  		: in string;
+								Timeout	  		: in time;
+								Msg		  		: in string;
+								Prefix     		: in string := "###ERROR###: ";
 								signal tb_run 	: out boolean) is
 	begin
-		wait until ExpVal = TgtVal for timeout;
-		if ExpVal /= TgtVal then
-			report "###ERROR###: target state not reached - " & msg severity error;
+		wait until ExpVal = Sig for timeout;
+		if ExpVal /= Sig then
+			report Prefix & msg & 
+				" Target state not reached" &
+				" [Expected " & str(ExpVal) & 
+				", Received " & str(Sig) & "]" 
+				severity error;
 			tb_run <= false;
 			wait;
 		end if;
