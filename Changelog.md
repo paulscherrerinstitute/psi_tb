@@ -1,7 +1,13 @@
+## 2.2.0
+
+* Added Features
+  * Added WaitForValueXXX() methods to psi\_tb\_activity\_pkg
+  * Added Signed/Unsigned compare functions to psi\_tb\_compare\_pkg
+
 ## 2.1.0
 
 * Added Features
-  * Added compare pfocedure for time in psi\_tb\_compare\_pkg
+  * Added compare procedure for time in psi\_tb\_compare\_pkg
 
 ## 2.0.0
 
