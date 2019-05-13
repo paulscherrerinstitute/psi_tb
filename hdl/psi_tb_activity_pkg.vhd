@@ -57,25 +57,25 @@ package psi_tb_activity_pkg is
 	                         signal Clk : in std_logic);
 
 	-- Strobe generator
-	procedure GenerateStrobe(	constant freq_clock : real      := 100.0E6; -- in Hz
-								constant freq_str   : real      := 1.0E6; 	-- in Hz
-								constant rst_pol_g  : std_logic := '1'; 	-- reset polarity
-								signal rst          : in std_logic; 		-- rst
-								signal clk          : in std_logic; 		-- clk
-								signal str          : out std_logic); 		-- str
+	procedure GenerateStrobe(	freq_clock 	 : in real      := 100.0E6; -- in Hz
+								freq_str   	 : in real      := 1.0E6; 	-- in Hz
+								rst_pol_g  	 : in std_logic := '1'; 	-- reset polarity
+								rst          : in std_logic; 			-- rst
+								signal clk   : in std_logic; 			-- clk
+								signal str   : out std_logic); 			-- str
 	
 	-- check if stdlv is arrived within a defined period of time
-	procedure WaitForValueStdlv(constant TgtVal	: std_logic_vector; 		-- target value
-								signal ExpVal	: in std_logic_vector; 		-- expected value
-								timeout	  		: time;						-- time to wait for
-								msg		  		: string;					-- msg to display
+	procedure WaitForValueStdlv(TgtVal			: in std_logic_vector; 		-- target value
+								ExpVal			: in std_logic_vector; 		-- expected value
+								timeout	  		: in time;					-- time to wait for
+								msg		  		: in string;				-- msg to display
 								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.
 							
 	-- check if std is arrived within a defined period of time
-	procedure WaitForValueStdl(	constant TgtVal : std_logic; 				-- target value
-								signal ExpVal	: in std_logic; 			-- expected value
-								timeout	  		: time;						-- time to wait for
-								msg		  		: string;					-- msg to display
+	procedure WaitForValueStdl(	TgtVal 			: in std_logic; 			-- target value
+								ExpVal			: in std_logic; 			-- expected value
+								timeout	  		: in time;					-- time to wait for
+								msg		  		: in string;				-- msg to display
 								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.						
 
 end psi_tb_activity_pkg;
@@ -170,11 +170,11 @@ package body psi_tb_activity_pkg is
 	end procedure;
 
 	-- *** GenerateStrobe ***
-	procedure GenerateStrobe(	constant freq_clock : real      := 100.0E6;
-								constant freq_str   : real      := 1.0E6;
-								constant rst_pol_g  : std_logic := '1';
-								signal rst          : in std_logic;
-								signal clk          : in std_logic;
+	procedure GenerateStrobe(	freq_clock 			: in real      := 100.0E6;
+								freq_str   			: in real      := 1.0E6;
+								rst_pol_g  			: in std_logic := '1';
+								rst          		: in std_logic;
+								signal clk        	: in std_logic;
 								signal str          : out std_logic) is
 
 		variable count_v : integer range 0 to (integer(ceil(freq_clock/freq_str))) := 0;
@@ -197,10 +197,10 @@ package body psi_tb_activity_pkg is
 	end procedure;
 
 	-- *** Wait for Standard logic vector to happen ***
-	procedure WaitForValueStdlv(TgtVal			: std_logic_vector;
-								ExpVal			: std_logic_vector;
-								timeout	  		: time;
-								msg		  		: string;
+	procedure WaitForValueStdlv(TgtVal			: in std_logic_vector;
+								ExpVal			: in std_logic_vector;
+								timeout	  		: in time;
+								msg		  		: in string;
 								signal tb_run 	: out boolean) is
 	begin
 		wait until ExpVal = TgtVal for timeout;
@@ -212,10 +212,10 @@ package body psi_tb_activity_pkg is
 	end procedure;
 	
 	-- *** Wait for Standard logic to happen ***
-	procedure WaitForValueStdl(	TgtVal			: std_logic;
-								ExpVal			: std_logic;
-								timeout	  		: time;
-								msg		  		: string;
+	procedure WaitForValueStdl(	TgtVal			: in std_logic;
+								ExpVal			: in std_logic;
+								timeout	  		: in time;
+								msg		  		: in string;
 								signal tb_run 	: out boolean) is
 	begin
 		wait until ExpVal = TgtVal for timeout;
