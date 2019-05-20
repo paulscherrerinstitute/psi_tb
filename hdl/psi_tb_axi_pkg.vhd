@@ -25,6 +25,10 @@ package psi_tb_axi_pkg is
 	constant xRESP_SLVERR_c 	: std_logic_vector(1 downto 0) 		:= "10";
 	constant xRESP_DECERR_c 	: std_logic_vector(1 downto 0) 		:= "11";
 	
+	constant xBURST_FIXED_c 	: std_logic_vector(1 downto 0) 		:= "00";
+	constant xBURST_INCR_c 		: std_logic_vector(1 downto 0) 		:= "01";
+	constant xBURST_WRAP_c 		: std_logic_vector(1 downto 0) 		:= "10";
+	
 	constant AxSIZE_1_c			: std_logic_vector(2 downto 0)		:= "000";
 	constant AxSIZE_2_c			: std_logic_vector(2 downto 0)		:= "001";
 	constant AxSIZE_4_c			: std_logic_vector(2 downto 0)		:= "010";
