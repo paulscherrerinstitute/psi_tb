@@ -1,3 +1,9 @@
+## 2.2.1
+
+* Bugfixes
+  * Fixed WaitForValueXXX() procedures in psi\_tb\_activity\_pkg
+  * Added burst modes to psi\_tb\_axi\_kpkg
+
 ## 2.2.0
 
 * Added Features
