@@ -13,6 +13,7 @@ library ieee;
 
 library work;
 	use work.psi_common_math_pkg.all;
+	use work.psi_tb_compare_pkg.all;
 	use work.psi_tb_txt_util.all;
 
 ------------------------------------------------------------------------------
@@ -328,7 +329,7 @@ package body psi_tb_axi_pkg is
 		-- wait for response
 		wait until rising_edge(clk) and sm.bvalid = '1';
 		ms.bready       <= '0';  
-		assert sm.bresp = "00" report "###ERROR###: axi_single_write(): received negative response!" severity error;
+		StdlvCompareStdlv(xRESP_OKAY_c, sm.bresp, "axi_single_write(): received negative response!");
 	end procedure;
 	
 	procedure axi_single_read(	address 	: in	integer;
@@ -366,7 +367,7 @@ package body psi_tb_axi_pkg is
 			valueStdlv(31 downto msb-lsb+1) := (others => '0');
 		end if;
 		value := to_integer(signed(valueStdlv));
-		assert sm.rresp = "00" report "###ERROR###: axi_single_read(): received negative response!" severity error;
+		StdlvCompareStdlv(xRESP_OKAY_c, sm.rresp, "axi_single_read(): received negative response!");
 	end procedure;
 	
 	procedure axi_single_expect(address 	: in	integer;
@@ -384,23 +385,7 @@ package body psi_tb_axi_pkg is
 		variable valPos_v : integer;
 	begin	
 		axi_single_read(address, val, ms, sm, clk, msb, lsb, sex);
-		if val > value+tol or val < value-tol then
-			valPos_v := val;
-			if valPos_v < 0 then
-				valPos_v := valPos_v + 16#80000000#; 
-			end if;
-			valuePos_v := value;
-			if valuePos_v < 0 then
-				valuePos_v := valuePos_v + 16#80000000#;
-			end if;
-			report "###ERROR###: axi_single_expect() received unexpected result: rcv " & integer'image(val) 
-						& " (" & hstr(to_unsigned(valPos_v,32)) & ")"
-						& " exp " & integer'image(value)
-						& " (" & hstr(to_unsigned(valuePos_v,32)) & ")"
-						& "+/-" & integer'image(tol) 
-						& " [" & name & "]" 
-			severity error;
-		end if;
+		IntCompare(value, val, "axi_single_expect() received unexpected result", tol);
 	end procedure;
 	
 	procedure axi_apply_aw(	AxAddr		: in	integer;
@@ -502,10 +487,10 @@ package body psi_tb_axi_pkg is
 	begin
 		sm.awready <= '1';
 		wait until rising_edge(aclk) and ms.awvalid = '1';
-		assert to_integer(unsigned(ms.awaddr)) = AxAddr report "###ERROR###: wrong AWADDR" severity error;
-		assert ms.awsize = AxSize report "###ERROR###: wrong AWSIZE" severity error;
-		assert unsigned(ms.awlen) = AxLen report "###ERROR###: wrong AWLEN" severity error;
-		assert ms.awburst = AxBurst report "###ERROR###: wrong AWBURST" severity error;
+		StdlvCompareInt(AxAddr, ms.awaddr, "wrong AWADDR", false);
+		StdlvCompareStdlv(AxSize, ms.awsize, "wrong AWSIZE");
+		StdlvCompareInt(AxLen, ms.awlen, "wrong AWLEN", false);
+		StdlvCompareStdlv(AxBurst, ms.awburst, "wrong AWBURST");
 		sm.awready <= '0';
 	end procedure;
 	
@@ -519,10 +504,10 @@ package body psi_tb_axi_pkg is
 	begin
 		sm.arready <= '1';
 		wait until rising_edge(aclk) and ms.arvalid = '1';
-		assert to_integer(unsigned(ms.araddr)) = AxAddr report "###ERROR###: wrong ARADDR" severity error;
-		assert ms.arsize = AxSize report "###ERROR###: wrong ARSIZE" severity error;
-		assert unsigned(ms.arlen) = AxLen report "###ERROR###: wrong ARLEN" severity error;
-		assert ms.arburst = AxBurst report "###ERROR###: wrong ARBURST" severity error;
+		StdlvCompareInt(AxAddr, ms.araddr, "wrong ARADDR", false);
+		StdlvCompareStdlv(AxSize, ms.arsize, "wrong ARSIZE");
+		StdlvCompareInt(AxLen, ms.arlen, "wrong ARLEN", false);
+		StdlvCompareStdlv(AxBurst, ms.arburst, "wrong ARBURST");
 		sm.arready <= '0';
 	end procedure;	
 	
@@ -534,9 +519,14 @@ package body psi_tb_axi_pkg is
 	begin
 		sm.wready <= '1';
 		wait until rising_edge(aclk) and ms.wvalid = '1';
-		assert ms.wdata = Data report "###ERROR###: wrong WDATA" severity error;
-		assert ms.wstrb = Wstrb report "###ERROR###: wrong WSTRB" severity error;
-		assert ms.wlast = '1' report "###ERROR###: wrong WLAST" severity error;
+		for byte in 0 to ms.wdata'length/8-1 loop
+			-- only check data that is used
+			if ms.wstrb(byte) = '1' then
+				StdlvCompareStdlv(Data(byte*8-1 downto byte*8), ms.wdata(byte*8-1 downto byte*8), "wrong WDATA - byte " & str(byte));
+			end if;
+		end loop;
+		StdlvCompareStdlv(Wstrb, ms.wstrb, "wrong WSTRB");
+		StdlCompare(1, ms.wlast, "wrong WLAST");
 		sm.wready <= '0';
 	end procedure;
 	
@@ -558,18 +548,23 @@ package body psi_tb_axi_pkg is
 			wait until rising_edge(aclk) and ms.wvalid = '1';
 			-- last transfer
 			if beat = Beats then
-				assert ms.wlast = '1' report "###ERROR###: WLAST not asserted at end of burst transfer" severity error;
-				assert ms.wstrb = WstrbLast report "###ERROR###: wrong WSTRB at end of burst transfer" severity error;
+				StdlCompare(1, ms.wlast, "WLAST not asserted at end of burst transfer");
+				StdlvCompareStdlv(WstrbLast, ms.wstrb, "wrong WSTRB at end of burst transfer");
 			elsif beat = 1 then
-				assert ms.wlast = '0' report "###ERROR###: WLAST asserted at beginning of burst transfer" severity error;
-				assert ms.wstrb = WstrbFirst report "###ERROR###: wrong WSTRB at beginning of burst transfer" severity error;
+				StdlCompare(0, ms.wlast, "WLAST asserted at beginning of burst transfer");
+				StdlvCompareStdlv(WstrbFirst, ms.wstrb, "wrong WSTRB at beginning of burst transfer");
 			else
-				assert ms.wlast = '0' report "###ERROR###: WLAST asserted in the middle of burst transfer" severity error;
-				assert signed(ms.wstrb) = -1 report "###ERROR###: wrong WSTRB in the middle of burst transfer" severity error;
+				StdlCompare(0, ms.wlast, "WLAST asserted in the middle of burst transfer");
+				StdlvCompareInt (-1, ms.wstrb, "wrong WSTRB in the middle of burst transfer");
 			end if;
 			-- Apply Data
-			DataStdlv_v := std_logic_vector(to_unsigned(DataCnt_v, DataStdlv_v'length));
-			assert ms.wdata = DataStdlv_v report "###ERROR###: wrong WDATA during butst transfer" severity error;			
+			DataStdlv_v := std_logic_vector(to_unsigned(DataCnt_v, DataStdlv_v'length));	
+			for byte in 0 to ms.wdata'length/8-1 loop
+				-- only check data that is used
+				if ms.wstrb(byte) = '1' then
+					StdlvCompareStdlv(DataStdlv_v(byte*8-1 downto byte*8), ms.wdata(byte*8-1 downto byte*8), "wrong WDATA during butst transfer - byte " & str(byte));
+				end if;
+			end loop;			
 			DataCnt_v := DataCnt_v + DataIncr;	
 			-- Low cycles if required
 			if not (beat = Beats) then
@@ -601,7 +596,7 @@ package body psi_tb_axi_pkg is
 	begin
 		ms.bready <= '1';
 		wait until rising_edge(aclk) and sm.bvalid = '1';
-		assert sm.bresp = Response report "###ERROR###: wrong BRESP" severity error;		
+		StdlvCompareStdlv(Response, sm.bresp, "wrong BRESP");		
 		ms.bready <= '0';
 	end procedure;
 	
@@ -667,12 +662,12 @@ package body psi_tb_axi_pkg is
 		ms.rready <= '1';
 		wait until rising_edge(aclk) and sm.rvalid = '1';
 		if not IgnoreResponse then
-			assert sm.rresp = Response report "###ERROR###: wrong RRESP" severity error;	
+			StdlvCompareStdlv(Response, sm.rresp, "wrong BRESP");	
 		end if;
 		if not IgnoreData then
-			assert sm.rdata = Data report "###ERROR###: wrong RDATA" severity error;
+			StdlvCompareStdlv(Data, sm.rdata, "wrong RDATA");
 		end if;
-		assert sm.rlast = '1' report "###ERROR###: wrong RLAST" severity error;
+		StdlCompare(1, sm.rlast, "wrong RLAST");
 		ms.rready <= '0';
 	end procedure;	
 	
@@ -695,17 +690,17 @@ package body psi_tb_axi_pkg is
 			wait until rising_edge(aclk) and sm.rvalid = '1';
 			-- last transfer
 			if beat = Beats then
-				assert sm.rlast = '1' report "###ERROR###: wrong RLAST" severity error;
+				StdlCompare(1, sm.rlast, "wrong RLAST");
 			else
-				assert sm.rlast = '0' report "###ERROR###: wrong RLAST" severity error;
+				StdlCompare(0, sm.rlast, "wrong RLAST");
 			end if;
 			-- Check Data
 			if not IgnoreResponse then
-				assert sm.rresp = Response report "###ERROR###: wrong RRESP" severity error;
+				StdlvCompareStdlv(Response, sm.rresp, "wrong BRESP");	
 			end if;
 			DataStdlv_v := std_logic_vector(to_unsigned(DataCnt_v, DataStdlv_v'length));
 			if not IgnoreData then
-				assert sm.rdata = DataStdlv_v report "###ERROR###: wrong RDATA" severity error;
+				StdlvCompareStdlv(DataStdlv_v, sm.rdata, "wrong RDATA");
 			end if;				
 			DataCnt_v := DataCnt_v + DataIncr;
 			-- Low cycles if required
