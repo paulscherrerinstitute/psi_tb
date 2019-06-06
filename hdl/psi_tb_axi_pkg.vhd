@@ -385,7 +385,7 @@ package body psi_tb_axi_pkg is
 		variable valPos_v : integer;
 	begin	
 		axi_single_read(address, val, ms, sm, clk, msb, lsb, sex);
-		IntCompare(value, val, "axi_single_expect() received unexpected result", tol);
+		IntCompare(value, val, "axi_single_expect() received unexpected result - " & name, tol);
 	end procedure;
 	
 	procedure axi_apply_aw(	AxAddr		: in	integer;
