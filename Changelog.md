@@ -1,3 +1,8 @@
+## 2.2.2
+
+* Bugfixes
+  * Internal cleanup work not visible to outside
+
 ## 2.2.1
 
 * Bugfixes
