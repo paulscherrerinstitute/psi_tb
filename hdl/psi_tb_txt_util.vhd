@@ -10,12 +10,14 @@
 ----  To Do:                                                              ----
 ----  -                                                                   ----
 ----                                                                      ----
-----  Author:                                                             ----
+----  Authors:                                                            ----
 ----    - Oyvind Harboe, oyvind.harboe zylin.com                          ----
+----    - Oliver Bründler, Paul Scherrer Instititute                      ----
 ----                                                                      ----
 ------------------------------------------------------------------------------
 ----                                                                      ----
 ---- Copyright (c) 2008 Oyvind Harboe <oyvind.harboe zylin.com>           ----
+---- Copyright (c) Paul Scherrer Institute (www.psi.ch)                   ----
 ----                                                                      ----
 ---- Distributed under the BSD license                                    ----
 ----                                                                      ----
@@ -80,6 +82,21 @@ package psi_tb_txt_util is
    -- convert std_logic_vector into a string in hex format
    function hstr(slv: std_logic_vector) return string;
    function hstr(slv: unsigned) return string;
+   
+   -- convert integer to string, VHDL2008 built-in equivalent
+   function to_string(int : integer) return string;
+
+   -- convert real to string, VHDL2008 built-in equivalent
+   function to_string(num : real) return string;
+   
+    -- convert signed to string, VHDL2008 built-in equivalent
+   function to_string(num : signed) return string;
+
+   -- convert unsigned to string, VHDL2008 built-in equivalent
+   function to_string(num : unsigned) return string;   
+   
+   -- convert std_logic_vector to string, VHDL2008 built-in equivalent
+   function to_string(num : std_logic_vector) return string; 
 
 
    -- functions to manipulate strings
@@ -335,6 +352,32 @@ package body psi_tb_txt_util is
    begin
       return hstr(std_logic_vector(slv));
    end function hstr;
+   
+   -- VHDL2008 to_string built-in equivalents
+   function to_string(int : integer) return string is
+   begin
+      return str(int);
+   end function;
+   
+   function to_string(num : real) return string is
+   begin
+      return real'image(num);
+   end function;
+
+   function to_string(num : signed) return string is
+   begin
+      return integer'image(to_integer(num));
+   end function;
+   
+   function to_string(num : unsigned) return string is
+   begin
+      return integer'image(to_integer(num));
+   end function;
+   
+   function to_string(num : std_logic_vector) return string is
+   begin
+      return str(num);
+   end function;   
 
    -- functions to manipulate strings
    -----------------------------------
