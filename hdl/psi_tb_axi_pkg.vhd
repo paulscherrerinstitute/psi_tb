@@ -427,8 +427,9 @@ package body psi_tb_axi_pkg is
 									signal ms	: out	axi_ms_r;
 									signal sm	: in	axi_sm_r;
 									signal aclk	: in	std_logic) is
+		constant DataInt_c	: std_logic_vector(Data'length-1 downto 0) := Data;
 	begin							
-		ms.wdata <= Data;
+		ms.wdata <= DataInt_c;
 		ms.wlast <= '1';
 		ms.wvalid <= '1';
 		ms.wstrb <= Wstrb;		
@@ -516,13 +517,14 @@ package body psi_tb_axi_pkg is
 									signal ms	: in	axi_ms_r;
 									signal sm	: out	axi_sm_r;
 									signal aclk	: in	std_logic) is
+		constant DataInt_c	: std_logic_vector(Data'length-1 downto 0) := Data;
 	begin
 		sm.wready <= '1';
 		wait until rising_edge(aclk) and ms.wvalid = '1';
 		for byte in 0 to ms.wdata'length/8-1 loop
 			-- only check data that is used
 			if ms.wstrb(byte) = '1' then
-				StdlvCompareStdlv(Data(byte*8-1 downto byte*8), ms.wdata(byte*8-1 downto byte*8), "wrong WDATA - byte " & str(byte));
+				StdlvCompareStdlv(DataInt_c(byte*8-1 downto byte*8), ms.wdata(byte*8-1 downto byte*8), "wrong WDATA - byte " & str(byte));
 			end if;
 		end loop;
 		StdlvCompareStdlv(Wstrb, ms.wstrb, "wrong WSTRB");
@@ -605,9 +607,10 @@ package body psi_tb_axi_pkg is
 										signal ms	: in	axi_ms_r;
 										signal sm	: out	axi_sm_r;
 										signal aclk	: in	std_logic) is
+		constant DataInt_c	: std_logic_vector(Data'length-1 downto 0) := Data;
 	begin
 		sm.rvalid <= '1';
-		sm.rdata <= Data;
+		sm.rdata <= DataInt_c;
 		sm.rresp <= Response;
 		sm.rlast <= '1';
 		wait until rising_edge(aclk) and ms.rready = '1';
@@ -658,6 +661,7 @@ package body psi_tb_axi_pkg is
 										signal aclk		: in	std_logic;
 										IgnoreData		: in	boolean := false;
 										IgnoreResponse	: in	boolean := false) is
+		constant DataInt_c	: std_logic_vector(Data'length-1 downto 0) := Data;
 	begin
 		ms.rready <= '1';
 		wait until rising_edge(aclk) and sm.rvalid = '1';
@@ -665,7 +669,7 @@ package body psi_tb_axi_pkg is
 			StdlvCompareStdlv(Response, sm.rresp, "wrong BRESP");	
 		end if;
 		if not IgnoreData then
-			StdlvCompareStdlv(Data, sm.rdata, "wrong RDATA");
+			StdlvCompareStdlv(DataInt_c, sm.rdata, "wrong RDATA");
 		end if;
 		StdlCompare(1, sm.rlast, "wrong RLAST");
 		ms.rready <= '0';
