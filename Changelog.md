@@ -1,3 +1,8 @@
+## 2.2.3
+
+* Bugfixes
+  * Added conversions from *to* to *downto* for std\_logic\_vector constants because they are *to* by default
+  
 ## 2.2.2
 
 * Bugfixes
