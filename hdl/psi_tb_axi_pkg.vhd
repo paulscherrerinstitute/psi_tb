@@ -470,7 +470,7 @@ package body psi_tb_axi_pkg is
 			if not (beat = Beats) then
 				for lc in 1 to VldLowCycles loop
 					ms.wvalid <= '0';
-					wait until rising_edge(aclk) and sm.wready = '1';
+					wait until rising_edge(aclk);
 				end loop;
 				ms.wvalid <= '1';
 			end if;
