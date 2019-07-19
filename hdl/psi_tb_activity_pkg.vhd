@@ -69,16 +69,14 @@ package psi_tb_activity_pkg is
 								ExpVal			: in std_logic_vector; 		-- expected value
 								Timeout	  		: in time;					-- time to wait for
 								Msg		  		: in string;				-- msg to display
-								Prefix     		: in string := "###ERROR###: ";
-								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.
+								Prefix     		: in string := "###ERROR###: ");   			-- bool out to stop Tb for ex.
 							
 	-- check if std is arrived within a defined period of time
 	procedure WaitForValueStdl(	signal Sig		: in std_logic; 			-- Signal to check
 								ExpVal			: in std_logic; 			-- expected value
 								Timeout	  		: in time;					-- time to wait for
 								Msg		  		: in string;				-- msg to display
-								Prefix     		: in string := "###ERROR###: ";
-								signal tb_run 	: out boolean);   			-- bool out to stop Tb for ex.						
+								Prefix     		: in string := "###ERROR###: ");   			-- bool out to stop Tb for ex.						
 
 end psi_tb_activity_pkg;
 
@@ -203,8 +201,7 @@ package body psi_tb_activity_pkg is
 								ExpVal			: in std_logic_vector;
 								Timeout	  		: in time;
 								Msg		  		: in string;
-								Prefix     		: in string := "###ERROR###: ";
-								signal tb_run 	: out boolean) is
+								Prefix     		: in string := "###ERROR###: ") is
 	begin
 		wait until ExpVal = Sig for timeout;
 		if ExpVal /= Sig then
@@ -213,8 +210,6 @@ package body psi_tb_activity_pkg is
 				" [Expected " & str(ExpVal) & "(0x" & hstr(ExpVal) & ")" &
 				", Received " & str(Sig) & "(0x" & hstr(Sig) & ")" & "]"
 				severity error;
-			tb_run <= false;
-			wait;
 		end if;
 	end procedure;
 	
@@ -223,8 +218,7 @@ package body psi_tb_activity_pkg is
 								ExpVal			: in std_logic;
 								Timeout	  		: in time;
 								Msg		  		: in string;
-								Prefix     		: in string := "###ERROR###: ";
-								signal tb_run 	: out boolean) is
+								Prefix     		: in string := "###ERROR###: ") is
 	begin
 		wait until ExpVal = Sig for timeout;
 		if ExpVal /= Sig then
@@ -233,8 +227,6 @@ package body psi_tb_activity_pkg is
 				" [Expected " & str(ExpVal) & 
 				", Received " & str(Sig) & "]" 
 				severity error;
-			tb_run <= false;
-			wait;
 		end if;
 	end procedure;
 
