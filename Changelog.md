@@ -1,3 +1,8 @@
+## 2.2.4
+* Bugfixes
+  * Remove non-generic content from WaitForValueXXX() procedures 
+  * Fixed AXI protocol violation in *psi\_tb\_axi\_pkg.axi\_apply\_wd\_burst()* - *wvalid* depended on *wread* if throttling was used
+
 ## 2.2.3
 
 * Bugfixes
