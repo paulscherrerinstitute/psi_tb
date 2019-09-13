@@ -60,7 +60,7 @@ package psi_tb_activity_pkg is
 	procedure GenerateStrobe(	freq_clock 	 : in real      := 100.0E6; -- in Hz
 								freq_str   	 : in real      := 1.0E6; 	-- in Hz
 								rst_pol_g  	 : in std_logic := '1'; 	-- reset polarity
-								rst          : in std_logic; 			-- rst
+								signal rst   : in std_logic; 			-- rst
 								signal clk   : in std_logic; 			-- clk
 								signal str   : out std_logic); 			-- str
 	
@@ -173,7 +173,7 @@ package body psi_tb_activity_pkg is
 	procedure GenerateStrobe(	freq_clock 			: in real      := 100.0E6;
 								freq_str   			: in real      := 1.0E6;
 								rst_pol_g  			: in std_logic := '1';
-								rst          		: in std_logic;
+								signal rst          : in std_logic;
 								signal clk        	: in std_logic;
 								signal str          : out std_logic) is
 
