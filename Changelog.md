@@ -1,4 +1,10 @@
+## 2.2.5
+
+* Bugfixes
+  * Fixed bug in *psi\_tb\_activity\_pkg.GenerateStrobe()* - Reset was sampled only once when the procedure was called, so usually it was stuck in reset. This bug was introduced in 2.2.0.
+
 ## 2.2.4
+
 * Bugfixes
   * Remove non-generic content from WaitForValueXXX() procedures 
   * Fixed AXI protocol violation in *psi\_tb\_axi\_pkg.axi\_apply\_wd\_burst()* - *wvalid* depended on *wread* if throttling was used
