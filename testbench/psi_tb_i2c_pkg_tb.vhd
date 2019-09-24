@@ -145,6 +145,24 @@ begin
 		I2cMasterSendStop(scl, sda, "M: stop");
 		wait for 10 us;
 		
+		-- *** Clock Stretching ***
+		print(">> Clock Stretching");
+		
+		-- Single Byte Read
+		print("Single Byte Read");
+		I2cMasterSendStart(scl, sda, "M: start");
+		I2cMasterSendAddr(16#13#, true, scl, sda, "M: address", 7);
+		I2cMasterExpectByte(16#AB#, scl, sda, "M: data-read");
+		I2cMasterSendStop(scl, sda, "M: stop");
+		wait for 10 us;
+		
+		print("Single Byte Write");
+		I2cMasterSendStart(scl, sda, "M: start");
+		I2cMasterSendAddr(16#13#, false, scl, sda, "M: address", 7);
+		I2cMasterSendByte(16#67#, scl, sda, "M: data-write");
+		I2cMasterSendStop(scl, sda, "M: stop");
+		wait for 10 us;
+		
 		wait;
 	end process;
 	
@@ -232,6 +250,19 @@ begin
 		I2cSlaveSendByte(16#89#, scl, sda, "S: data-read", '1');
 		I2cSlaveWaitStop(scl, sda, "S: wait stop");
 		
+		
+		-- Single Byte Read
+		-- *** Clock Stretching ***
+		I2cSlaveWaitStart(scl, sda, "S: wait start");
+		I2cSlaveExpectAddr(16#13#, true, scl, sda, "S: check address", 7, '0', 1 ms, 10 us);
+		I2cSlaveSendByte(16#AB#, scl, sda, "S: data-read", '0', 1 ms, 10 us);
+		I2cSlaveWaitStop(scl, sda, "S: wait stop");	
+
+		-- Single Byte Write
+		I2cSlaveWaitStart(scl, sda, "S: wait start");
+		I2cSlaveExpectAddr(16#13#, false, scl, sda, "S: check address", 7, '0', 1 ms, 5 us);
+		I2cSlaveExpectByte(16#67#, scl, sda, "S: data-write", '0', 1 ms, 7 us);
+		I2cSlaveWaitStop(scl, sda, "S: wait stop");		
 		
 		wait;
 	end process;

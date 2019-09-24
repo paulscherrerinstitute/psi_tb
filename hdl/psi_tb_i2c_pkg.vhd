@@ -103,6 +103,7 @@ package psi_tb_i2c_pkg is
 									AddrBits	: in	integer		:= 7;		-- 7 or 10
 									AckOutput	: in 	std_logic	:= '0';		-- '0' for ack, '1' for nack
 									Timeout		: in	time		:= 1 ms;
+									ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 									Prefix		: in 	string		:= "###ERROR###: ");	
 								
 	procedure I2cSlaveExpectByte(	ExpData 	: in	integer range -128 to 255;
@@ -111,6 +112,7 @@ package psi_tb_i2c_pkg is
 									Msg			: in 	string		:= "No Msg";
 									AckOutput	: in 	std_logic	:= '0';		-- '0' for ack, '1' for nack
 									Timeout		: in	time		:= 1 ms;
+									ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 									Prefix		: in 	string		:= "###ERROR###: ");	
 								
 	procedure I2cSlaveSendByte(	Data		: in	integer range -128 to 255;
@@ -119,6 +121,7 @@ package psi_tb_i2c_pkg is
 								Msg			: in 	string		:= "No Msg";
 								ExpectedAck	: in 	std_logic	:= '0';			-- '0' for ack, '1' for nack, anything else for "don't check"
 								Timeout		: in	time		:= 1 ms;
+								ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 								Prefix		: in 	string		:= "###ERROR###: ");	
 
 end psi_tb_i2c_pkg;
@@ -184,16 +187,18 @@ package body psi_tb_i2c_pkg is
 							GeneralMsg	: in	string) is
 		variable Correct_v : boolean;
 	begin
-		if Expected = '0' then
-			wait until Sig = '0' for Timeout;
-			Correct_v := (Sig = '0');
-		else
-			wait until (Sig = '1') or (Sig = 'H') for Timeout;
-			Correct_v := ((Sig = '1') or (Sig = 'H'));
+		if Sig /= Expected then
+			if Expected = '0' then
+				wait until Sig = '0' for Timeout;
+				Correct_v := (Sig = '0');
+			else
+				wait until (Sig = '1') or (Sig = 'H') for Timeout;
+				Correct_v := ((Sig = '1') or (Sig = 'H'));
+			end if;
+			assert Correct_v 
+				report GenMessage(Msg.Prefix, Msg.Func, GeneralMsg, Msg.User)
+				severity error;
 		end if;
-		assert Correct_v 
-			report GenMessage(Msg.Prefix, Msg.Func, GeneralMsg, Msg.User)
-			severity error;
 	end procedure;
 	
 	
@@ -233,6 +238,7 @@ package body psi_tb_i2c_pkg is
 		
 		-- Send Clk Pulse
 		Scl <= 'Z';
+		LevelWait('1', Scl, 1 ms, Msg, "SCL held low by other device");
 		wait for ClkHalfPeriod;
 		CheckLastActivity(Scl, ClkHalfPeriod*0.9, -1, GenMessageNoPrefix(Msg.Func, "SCL high period too short [" & BitInfo & "]", Msg.User), Msg.Prefix);
 		LevelCheck(Data, Sda, Msg, "SDA readback does not match SDA transmit value during SCL pulse [" & BitInfo & "]");
@@ -255,6 +261,7 @@ package body psi_tb_i2c_pkg is
 		
 		-- Send Clk Pulse
 		Scl <= 'Z';
+		LevelWait('1', Scl, 1 ms, Msg, "SCL held low by other device");
 		wait for ClkHalfPeriod;
 		CheckLastActivity(Scl, ClkHalfPeriod*0.9, -1, GenMessageNoPrefix(Msg.Func, "SCL high period too short [" & BitInfo & "]", Msg.User), Msg.Prefix);
 		LevelCheck(Data, Sda, Msg, "Received wrong data [" & BitInfo & "]");
@@ -268,17 +275,30 @@ package body psi_tb_i2c_pkg is
 									signal Sda		: inout std_logic;
 									Timeout			: in	time;
 									BitInfo			: in	string;
-									Msg				: in 	MsgInfo_r) is	
+									Msg				: in 	MsgInfo_r;
+									ClockStretch	: in	time) is	
+		variable Stretched_v : boolean := false;
 	begin
 		-- Initial Check
 		LevelCheck('0', Scl, Msg, "SCL must be 0 before SendBitExclClock is called");
+		
+		-- Clock stretching
+		if ClockStretch > 0 ns then
+			Scl <= '0';
+			wait for ClockStretch;
+			Stretched_v := true;
+		end if;
 		
 		-- Assert Data		
 		if Data = '0' then
 			Sda <= '0';
 		else
 			Sda <= 'Z';
-		end if;		
+		end if;	
+		if Stretched_v then
+			wait for ClkQuartPeriod;
+			Scl <= 'Z';
+		end if;
 		
 		-- Wait clock rising edge
 		LevelWait('1', Scl, Timeout, Msg, "SCL did not go high");
@@ -297,12 +317,18 @@ package body psi_tb_i2c_pkg is
 									signal Sda		: inout std_logic;
 									Timeout			: in	time;
 									BitInfo			: in	string;
-									Msg				: in 	MsgInfo_r) is	
+									Msg				: in 	MsgInfo_r;
+									ClockStretch	: in	time) is	
 	begin
 		-- Initial Check
 		LevelCheck('0', Scl, Msg, "SCL must be 0 before CheckBitExclClock is called");
 		
 		-- Wait clock rising edge
+		if ClockStretch > 0 ns then
+			Scl <= '0';
+			wait for ClockStretch;
+			Scl <= 'Z';
+		end if;		
 		LevelWait('1', Scl, Timeout, Msg, "SCL did not go high");
 		
 		-- wait clock falling edge
@@ -333,11 +359,12 @@ package body psi_tb_i2c_pkg is
 									signal Scl	: inout std_logic;
 									signal Sda	: inout std_logic;
 									Msg			: in 	MsgInfo_r;
-									Timeout		: in	time) is
+									Timeout		: in	time;
+									ClkStretch	: in	time) is
 	begin
 		-- Do bits
 		for i in 7 downto 0 loop
-			CheckBitExclClock(ExpData(i), Scl, Sda, Timeout, to_string(i), Msg);	
+			CheckBitExclClock(ExpData(i), Scl, Sda, Timeout, to_string(i), Msg, ClkStretch);	
 		end loop;
 	end procedure;
 	
@@ -599,22 +626,23 @@ package body psi_tb_i2c_pkg is
 									AddrBits	: in	integer		:= 7;		-- 7 or 10
 									AckOutput	: in 	std_logic	:= '0';		-- '0' for ack, '1' for nack
 									Timeout		: in	time		:= 1 ms;
+									ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 									Prefix		: in 	string		:= "###ERROR###: ") is
 		constant AddrSlv_c 	: std_logic_vector(9 downto 0) := std_logic_vector(to_unsigned(Address, 10));
 		constant Rw_c 		: std_logic		:= choose(IsRead, '1', '0');
 	begin
 		-- 7 Bit addressing
 		if AddrBits = 7 then
-			ExpectByteExclClock(AddrSlv_c(6 downto 0) & Rw_c, Scl, Sda, (Prefix, "I2cSlaveExpectAddr 7b", Msg), Timeout);
-			SendBitExclClock(AckOutput, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveExpectAddr 7b ack", Msg));
+			ExpectByteExclClock(AddrSlv_c(6 downto 0) & Rw_c, Scl, Sda, (Prefix, "I2cSlaveExpectAddr 7b", Msg), Timeout, ClkStretch);
+			SendBitExclClock(AckOutput, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveExpectAddr 7b ack", Msg), ClkStretch);
 			I2cBusFree(Scl, Sda);
 		-- 10 Bit addressing
 		elsif AddrBits = 10 then
-			ExpectByteExclClock("11110" & AddrSlv_c(9 downto 8) & Rw_c, Scl, Sda, (Prefix, "I2cSlaveExpectAddr 10b 9:8" , Msg), Timeout);
-			SendBitExclClock(AckOutput, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveExpectAddr 10b 9:8 ack", Msg));
+			ExpectByteExclClock("11110" & AddrSlv_c(9 downto 8) & Rw_c, Scl, Sda, (Prefix, "I2cSlaveExpectAddr 10b 9:8" , Msg), Timeout, ClkStretch);
+			SendBitExclClock(AckOutput, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveExpectAddr 10b 9:8 ack", Msg), ClkStretch);
 			I2cBusFree(Scl, Sda);
-			ExpectByteExclClock(AddrSlv_c(7 downto 0), Scl, Sda, (Prefix, "I2cSlaveExpectAddr 10b 7:0", Msg), Timeout);
-			SendBitExclClock(AckOutput, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveExpectAddr 10b 7:0 ack", Msg));		
+			ExpectByteExclClock(AddrSlv_c(7 downto 0), Scl, Sda, (Prefix, "I2cSlaveExpectAddr 10b 7:0", Msg), Timeout, ClkStretch);
+			SendBitExclClock(AckOutput, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveExpectAddr 10b 7:0 ack", Msg), ClkStretch);		
 			I2cBusFree(Scl, Sda);
 		else
 			report Prefix & "I2cSlaveExpectAddr - Illegal addrBits (must be 7 or 10) - " & Msg severity error;
@@ -627,6 +655,7 @@ package body psi_tb_i2c_pkg is
 									Msg			: in 	string		:= "No Msg";
 									AckOutput	: in 	std_logic	:= '0';		-- '0' for ack, '1' for nack
 									Timeout		: in	time		:= 1 ms;
+									ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 									Prefix		: in 	string		:= "###ERROR###: ") is
 		variable Data_v : std_logic_vector(7 downto 0);
 	begin
@@ -635,8 +664,8 @@ package body psi_tb_i2c_pkg is
 		else
 			Data_v := std_logic_vector(to_unsigned(ExpData, 8));
 		end if;
-		ExpectByteExclClock(Data_v, Scl, Sda, (Prefix, "I2cSlaveExpectByte", Msg), Timeout);
-		SendBitExclClock(AckOutput, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveExpectByte ack", Msg));
+		ExpectByteExclClock(Data_v, Scl, Sda, (Prefix, "I2cSlaveExpectByte", Msg), Timeout, ClkStretch);
+		SendBitExclClock(AckOutput, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveExpectByte ack", Msg), ClkStretch);
 		I2cBusFree(Scl, Sda);
 	end procedure;
 							
@@ -647,6 +676,7 @@ package body psi_tb_i2c_pkg is
 								Msg			: in 	string		:= "No Msg";
 								ExpectedAck	: in 	std_logic	:= '0';			-- '0' for ack, '1' for nack, anything else for "don't check"
 								Timeout		: in	time		:= 1 ms;
+								ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 								Prefix		: in 	string		:= "###ERROR###: ") is
 		variable Data_v : std_logic_vector(7 downto 0);
 	begin
@@ -659,11 +689,11 @@ package body psi_tb_i2c_pkg is
 		
 		-- Send data
 		for i in 7 downto 0 loop
-			SendBitExclClock(Data_v(i), Scl, Sda, Timeout, to_string(i), (Prefix, "I2cSlaveSendByte", Msg));
+			SendBitExclClock(Data_v(i), Scl, Sda, Timeout, to_string(i), (Prefix, "I2cSlaveSendByte", Msg), ClkStretch);
 		end loop;
 		
 		-- Check ack
-		CheckBitExclClock(ExpectedAck, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveSendByte", Msg));
+		CheckBitExclClock(ExpectedAck, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveSendByte", Msg), ClkStretch);
 		I2cBusFree(Scl, Sda);		
 	end procedure;
 
