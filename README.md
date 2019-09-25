@@ -32,7 +32,7 @@ The required folder structure looks as given below (folder names must be matched
 
 Alternatively the repository [psi\_fpga\_all](https://github.com/paulscherrerinstitute/psi_fpga_all) can be used. This repo contains all FPGA related repositories as submodules in the correct folder structure.
 * VHDL
-  * [psi\_common](https://github.com/paulscherrerinstitute/psi_common) (2.0.0 or hgiher)
+  * [psi\_common](https://github.com/paulscherrerinstitute/psi_common) (2.6.0 or hgiher)
   * [**psi\_tb**](https://github.com/paulscherrerinstitute/psi_tb)
 
 ## Tagging Policy

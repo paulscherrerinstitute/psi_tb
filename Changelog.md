@@ -1,3 +1,10 @@
+## 2.3.0
+
+* Bugfixes
+  * None
+* Added Features
+  * Added *psi\_tb\_i2c\_pkg* to easily test I2C interfaces
+
 ## 2.2.5
 
 * Bugfixes
