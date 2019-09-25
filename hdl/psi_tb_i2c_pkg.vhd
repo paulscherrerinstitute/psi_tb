@@ -87,12 +87,14 @@ package psi_tb_i2c_pkg is
 											signal Sda 	: inout std_logic;
 											Msg			: in 	string		:= "No Msg";
 											Timeout		: in	time		:= 1 ms;
+											ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 											Prefix		: in 	string		:= "###ERROR###: ");
 									
 	procedure I2cSlaveWaitStop(	signal Scl 	: inout std_logic;
 								signal Sda 	: inout std_logic;
 								Msg			: in 	string		:= "No Msg";
 								Timeout		: in	time		:= 1 ms;
+								ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 								Prefix		: in 	string		:= "###ERROR###: ");
 							
 	procedure I2cSlaveExpectAddr(	Address 	: in	integer;
@@ -572,6 +574,7 @@ package body psi_tb_i2c_pkg is
 											signal Sda 	: inout std_logic;
 											Msg			: in 	string		:= "No Msg";
 											Timeout		: in	time		:= 1 ms;
+											ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 											Prefix		: in 	string	:= "###ERROR###: ") is
 		constant MsgInfo : MsgInfo_r := (Prefix, "I2cSlaveWaitRepeatedStart", Msg);
 	begin
@@ -582,6 +585,12 @@ package body psi_tb_i2c_pkg is
 		
 		-- Do Check
 		if to01X(Scl) = '0' then
+			-- Clock stretching
+			if ClkStretch > 0 ns then
+				Scl <= '0';
+				wait for ClkStretch;
+				Scl <= 'Z';
+			end if;	
 			LevelWait('1', Scl, Timeout, MsgInfo, "SCL did not go high");
 			LevelCheck('1', Sda, MsgInfo, "SDA must be 1 before SCL goes high");
 		end if;
@@ -598,6 +607,7 @@ package body psi_tb_i2c_pkg is
 								signal Sda 	: inout std_logic;
 								Msg			: in 	string		:= "No Msg";
 								Timeout		: in	time		:= 1 ms;
+								ClkStretch	: in	time		:= 0 ns;	-- hold clock-low for at least this time
 								Prefix		: in 	string	:= "###ERROR###: ") is
 		constant MsgInfo : MsgInfo_r := (Prefix, "I2cSlaveWaitStop", Msg);
 	begin
@@ -608,6 +618,12 @@ package body psi_tb_i2c_pkg is
 		
 		-- Do Check
 		if Scl = '0' then
+			-- Clock stretching
+			if ClkStretch > 0 ns then
+				Scl <= '0';
+				wait for ClkStretch;
+				Scl <= 'Z';
+			end if;	
 			LevelWait('1', Scl, Timeout, MsgInfo, "SCL did not go high");
 			LevelCheck('0', Sda, MsgInfo, "SDA must be 0 before SCL goes high");
 		end if;
@@ -693,8 +709,9 @@ package body psi_tb_i2c_pkg is
 		end loop;
 		
 		-- Check ack
+		I2cBusFree(Scl, Sda);
 		CheckBitExclClock(ExpectedAck, Scl, Sda, Timeout, "ACK", (Prefix, "I2cSlaveSendByte", Msg), ClkStretch);
-		I2cBusFree(Scl, Sda);		
+				
 	end procedure;
 
 	
