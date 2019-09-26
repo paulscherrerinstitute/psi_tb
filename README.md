@@ -31,6 +31,8 @@ Examples for things that belong into this library:
 The required folder structure looks as given below (folder names must be matched exactly). 
 
 Alternatively the repository [psi\_fpga\_all](https://github.com/paulscherrerinstitute/psi_fpga_all) can be used. This repo contains all FPGA related repositories as submodules in the correct folder structure.
+* TCL
+  * [PsiSim](https://github.com/paulscherrerinstitute/PsiSim) (2.2.0 or higher)
 * VHDL
   * [psi\_common](https://github.com/paulscherrerinstitute/psi_common) (2.6.0 or hgiher)
   * [**psi\_tb**](https://github.com/paulscherrerinstitute/psi_tb)
