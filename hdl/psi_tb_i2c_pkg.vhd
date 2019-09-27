@@ -23,6 +23,20 @@ library work;
 ------------------------------------------------------------------------------
 package psi_tb_i2c_pkg is
 	-- -----------------------------------------------------------------------
+	-- Constants
+	-- -----------------------------------------------------------------------
+	constant I2c_ACK 	: std_logic := '0';
+	constant I2c_NACK 	: std_logic := '1';
+	
+	type I2c_Transaction_t is (I2c_READ, I2c_WRITE);
+	
+	-- -----------------------------------------------------------------------
+	-- Functions
+	-- -----------------------------------------------------------------------
+	function I2cGetAddr( Addr 	: in integer;
+						 Trans 	: in I2c_Transaction_t) return integer;
+
+	-- -----------------------------------------------------------------------
 	-- Initialization
 	-- -----------------------------------------------------------------------
 	procedure I2cPullup(signal scl : inout std_logic;
@@ -370,7 +384,14 @@ package body psi_tb_i2c_pkg is
 		end loop;
 	end procedure;
 	
-
+	-- -----------------------------------------------------------------------
+	-- Functions
+	-- -----------------------------------------------------------------------
+	function I2cGetAddr( Addr 	: in integer;
+						 Trans 	: in I2c_Transaction_t) return integer is
+	begin
+		return Addr*2+choose(Trans=I2c_READ, 1, 0);
+	end function;
 	
 	-- -----------------------------------------------------------------------
 	-- Master Side Transactions
