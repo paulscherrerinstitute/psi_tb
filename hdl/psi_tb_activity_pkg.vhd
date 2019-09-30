@@ -59,6 +59,10 @@ package psi_tb_activity_pkg is
 	-- Wait for a number of clock cycles
 	procedure WaitClockCycles(	Cycles     : in integer;
 								signal Clk : in std_logic);	
+				
+	-- Wait for a time and quit on rising edge
+	procedure ClockedWaitTime(	Duration   	: in time;
+								signal Clk 	: in std_logic);	
 
 	-- Strobe generator
 	procedure GenerateStrobe(	freq_clock 	 : in real      := 100.0E6; -- in Hz
@@ -180,6 +184,14 @@ package body psi_tb_activity_pkg is
 		for i in 0 to Cycles-1 loop
 			wait until rising_edge(Clk);
 		end loop;
+	end procedure;
+	
+	-- *** ClockedWaitTime ***
+	procedure ClockedWaitTime(	Duration   	: in time;
+								signal Clk 	: in std_logic) is
+	begin
+		wait for Duration;
+		wait until rising_edge(Clk);
 	end procedure;
 
 	-- *** GenerateStrobe ***
