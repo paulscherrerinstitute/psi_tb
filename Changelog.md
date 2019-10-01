@@ -1,3 +1,12 @@
+## 2.4.0
+
+* Bugfixes
+  * None
+* Added Featurs
+  * Added continuous integration scripts
+  * Added *psi\_tb\_activity\_pkg.WaitForClockCycles()* and *psi\_tb\_activity\_pkg.ClockedWaitTime()*
+  * Added more features to *psi\_tb\_i2c\_pkg*
+
 ## 2.3.0
 
 * Bugfixes
