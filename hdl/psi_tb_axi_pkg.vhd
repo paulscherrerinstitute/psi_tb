@@ -666,7 +666,7 @@ package body psi_tb_axi_pkg is
 		ms.rready <= '1';
 		wait until rising_edge(aclk) and sm.rvalid = '1';
 		if not IgnoreResponse then
-			StdlvCompareStdlv(Response, sm.rresp, "wrong BRESP");	
+			StdlvCompareStdlv(Response, sm.rresp, "wrong RRESP");	
 		end if;
 		if not IgnoreData then
 			StdlvCompareStdlv(DataInt_c, sm.rdata, "wrong RDATA");
@@ -695,18 +695,23 @@ package body psi_tb_axi_pkg is
 			-- last transfer
 			if beat = Beats then
 				StdlCompare(1, sm.rlast, "wrong RLAST");
+				-- check if last response is error (if error is expected) 
+				if not IgnoreResponse and Response /= xRESP_OKAY_c then
+					StdlvCompareStdlv(Response, sm.rresp, "wrong RRESP");	
+				end if;
 			else
 				StdlCompare(0, sm.rlast, "wrong RLAST");
 			end if;
 			-- Check Data
-			if not IgnoreResponse then
-				StdlvCompareStdlv(Response, sm.rresp, "wrong BRESP");	
-			end if;
 			DataStdlv_v := std_logic_vector(to_unsigned(DataCnt_v, DataStdlv_v'length));
 			if not IgnoreData then
 				StdlvCompareStdlv(DataStdlv_v, sm.rdata, "wrong RDATA");
 			end if;				
 			DataCnt_v := DataCnt_v + DataIncr;
+			-- Response must be OKAY for all beats (if okay is expected)
+			if not IgnoreResponse and Response = xRESP_OKAY_c then
+				StdlvCompareStdlv(Response, sm.rresp, "wrong RRESP");	
+			end if;
 			-- Low cycles if required
 			if not (beat = Beats) then
 				for lc in 1 to RdyLowCycles loop
