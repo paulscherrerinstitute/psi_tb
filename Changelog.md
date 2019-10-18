@@ -1,3 +1,10 @@
+## 2.4.1
+
+* Bugfixes
+  * Corrected response checking in *psi\_tb\_axi\_pkg*
+* Added Features 
+  * None
+
 ## 2.4.0
 
 * Bugfixes
