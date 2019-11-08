@@ -33,10 +33,6 @@ use std.textio.all;
 library work;
 use work.psi_tb_txt_util.all;
 
---library work;
---use work.psi_tb_txt_util.all;
---use work.psi_fix_pkg.all;
-
 ------------------------------------------------------------------------------
 -- Package Header
 ------------------------------------------------------------------------------
