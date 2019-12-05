@@ -60,7 +60,8 @@ package psi_tb_textfile_pkg is
 	                                Filepath    : in string;
 	                                ClkPerSpl   : in positive := 1;
 	                                MaxLines    : in integer  := -1; -- -1 = infinite, else number of lines
-	                                IgnoreLines : in natural  := 0);
+	                                IgnoreLines : in natural  := 0;
+									DataOnlyOnVld : in boolean := false);
 
 	-- Read a textfile and compare it column by column to signals
 	procedure CheckTextfileContent(signal Clk    : in std_logic;
@@ -98,7 +99,8 @@ package body psi_tb_textfile_pkg is
 	                                Filepath    : in string;
 	                                ClkPerSpl   : in positive := 1;
 	                                MaxLines    : in integer := -1;
-	                                IgnoreLines : in natural := 0) is
+	                                IgnoreLines : in natural := 0;
+									DataOnlyOnVld : in boolean := false) is
 		file fp         : text;
 		variable ln     : line;
 		variable Spl    : integer;
@@ -120,6 +122,9 @@ package body psi_tb_textfile_pkg is
 				end loop;
 				wait until rising_edge(Clk) and Rdy = '1';
 				if ClkPerSpl > 1 then
+					if DataOnlyOnVld then
+						Data <= (Data'range => 0);
+					end if;
 					Vld <= '0';
 					for i in 0 to ClkPerSpl - 2 loop
 						wait until rising_edge(Clk);
