@@ -27,12 +27,12 @@ Examples for things that belong into this library:
 ## What does not belong into this Library
 
  * Any project specific code
- * Code that better fits into another library 
+ * Code that better fits into another library
  * Code that is meant for snythesis
- 
+
 # Dependencies
 
-The required folder structure looks as given below (folder names must be matched exactly). 
+The required folder structure looks as given below (folder names must be matched exactly).
 
 Alternatively the repository [psi\_fpga\_all](https://github.com/paulscherrerinstitute/psi_fpga_all) can be used. This repo contains all FPGA related repositories as submodules in the correct folder structure.
 * TCL
@@ -42,7 +42,7 @@ Alternatively the repository [psi\_fpga\_all](https://github.com/paulscherrerins
   * [**psi\_tb**](https://github.com/paulscherrerinstitute/psi_tb)
 
 ## Tagging Policy
-Stable releases are tagged in the form *major*.*minor*.*bugfix*. 
+Stable releases are tagged in the form *major*.*minor*.*bugfix*.
 
 * Whenever a change is not fully backward compatible, the *major* version number is incremented
 * Whenever new features are added, the *minor* version number is incremented
