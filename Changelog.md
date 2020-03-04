@@ -1,15 +1,21 @@
+## 2.5.0
+* Added Features
+  * Add documentation of pkg function
+  * In psi_tb_textfile_pkg added option to invalidate data when Vld low
+  * In psi_tb_compare_pkg added overloading StdlCompare (sl/sl) function
+
 ## 2.4.1
 
 * Bugfixes
   * Corrected response checking in *psi\_tb\_axi\_pkg*
-* Added Features 
+* Added Features
   * None
 
 ## 2.4.0
 
 * Bugfixes
   * None
-* Added Featurs
+* Added Features
   * Added continuous integration scripts
   * Added *psi\_tb\_activity\_pkg.WaitForClockCycles()* and *psi\_tb\_activity\_pkg.ClockedWaitTime()*
   * Added more features to *psi\_tb\_i2c\_pkg*
@@ -29,14 +35,14 @@
 ## 2.2.4
 
 * Bugfixes
-  * Remove non-generic content from WaitForValueXXX() procedures 
+  * Remove non-generic content from WaitForValueXXX() procedures
   * Fixed AXI protocol violation in *psi\_tb\_axi\_pkg.axi\_apply\_wd\_burst()* - *wvalid* depended on *wread* if throttling was used
 
 ## 2.2.3
 
 * Bugfixes
   * Added conversions from *to* to *downto* for std\_logic\_vector constants because they are *to* by default
-  
+
 ## 2.2.2
 
 * Bugfixes
