@@ -253,9 +253,9 @@ package body psi_tb_textfile_pkg is
 			if time_sim = false then
 				for j in 0 to Data'length - 1 loop
 					if j = Data'length - 1 then
-						write(ln, to_string(Data(j)));
+						write(ln, work.psi_tb_txt_util.to_string(Data(j)));
 					else
-						write(ln, to_string(Data(j)));
+						write(ln, work.psi_tb_txt_util.to_string(Data(j)));
 						write(ln, spacer);
 					end if;
 				end loop;
@@ -266,7 +266,7 @@ package body psi_tb_textfile_pkg is
 					if j = Data'length then
 						write(ln, now);
 					else
-						write(ln, to_string(Data(j)));
+						write(ln, work.psi_tb_txt_util.to_string(Data(j)));
 						write(ln, spacer);
 					end if;
 				end loop;
