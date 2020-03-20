@@ -50,7 +50,10 @@ package psi_tb_activity_pkg is
 	-- pulse a signal
 	procedure PulseSig(signal Sig : out std_logic;
 	                   signal Clk : in std_logic);
-
+	  
+  -- pulse a signal
+  procedure PulseSigNeg(signal Sig : out std_logic;
+                        signal Clk : in std_logic);
 	-- Clocked wait for a signal
 	procedure ClockedWaitFor(Val        : in std_logic;
 	                         signal Sig : in std_logic;
@@ -169,6 +172,16 @@ package body psi_tb_activity_pkg is
 		Sig <= '0';
 	end procedure;
 
+  -- *** PulseSig ***
+  procedure PulseSigNeg(signal Sig : out std_logic;
+                        signal Clk : in std_logic) is
+  begin
+    wait until rising_edge(Clk);
+    Sig <= '0';
+    wait until rising_edge(Clk);
+    Sig <= '1';
+  end procedure;
+  
 	-- *** ClockedWaitFor ***
 	procedure ClockedWaitFor(Val        : in std_logic;
 	                         signal Sig : in std_logic;
