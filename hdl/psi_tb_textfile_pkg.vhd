@@ -68,7 +68,8 @@ package psi_tb_textfile_pkg is
 	                                 ClkPerSpl     : in positive := 1;
 	                                 ErrorPrefix   : in string   := "###ERROR###";
 	                                 MaxLines      : in integer  := -1; -- -1 = infinite, else number of lines		
-	                                 IgnoreLines   : in natural  := 0);
+	                                 IgnoreLines   : in natural  := 0;
+	                                 Msg           : in string := "None");
 
 	-- write a textfile with header line 1 name of data & second line FixPoint format
 	procedure WriteTextfile(signal Clk        : in std_logic;
@@ -144,7 +145,8 @@ package body psi_tb_textfile_pkg is
 	                                 ClkPerSpl     : in positive := 1;
 	                                 ErrorPrefix   : in string := "###ERROR###";
 	                                 MaxLines      : in integer := -1;
-	                                 IgnoreLines   : in natural := 0) is
+	                                 IgnoreLines   : in natural := 0;
+	                                 Msg           : in string := "None") is
 		file fp         : text;
 		variable ln     : line;
 		variable Spl    : integer;
@@ -171,7 +173,7 @@ package body psi_tb_textfile_pkg is
 					read(ln, Spl);
 					Sig := Data(idx);
 					assert Sig = Spl
-					report ErrorPrefix & ": Wrong Sample, line=" & integer'image(lineNr) & " column=" & integer'image(colNr) & LF &
+					report ErrorPrefix & ": Wrong Sample, Msg=" & Msg & ", line=" & integer'image(lineNr) & " column=" & integer'image(colNr) & LF &
 							   " --> Expected " & integer'image(Spl) & " [0x" & hstr(std_logic_vector(to_signed(Spl, 32))) & "]" & LF &
 							   " --> Received " & integer'image(Sig) & " [0x" & hstr(std_logic_vector(to_signed(Sig, 32))) & "]"
 					severity error;
