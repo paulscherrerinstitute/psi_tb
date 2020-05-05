@@ -99,6 +99,23 @@ package psi_tb_axi_pkg is
 		bvalid              : std_logic;                              		-- Write response valid. This signal indicates that the channel is signaling a valid write response.
 	end record;
 
+	-- Data Width bigger than 32-bit for integer types
+	function  decimal_string_to_unsigned( decimal_string  : string;
+		                                    wanted_bitwidth : positive
+	                                     ) return unsigned;
+
+	function  decimal_string_to_signed( decimal_string  : string;
+		                                  wanted_bitwidth : positive
+	                                   ) return signed;
+
+	function  hex_string_to_unsigned( hex_string      : string;
+		                                wanted_bitwidth : positive
+	                                 ) return unsigned;
+
+	function  hex_string_to_signed( hex_string      : string;
+		                              wanted_bitwidth : positive
+	                               ) return signed;
+
 	-- Initialization
 	procedure axi_master_init(signal ms	: out	axi_ms_r);
 	
@@ -110,9 +127,25 @@ package psi_tb_axi_pkg is
 								signal ms	: out	axi_ms_r;
 								signal sm	: in	axi_sm_r;
 								signal clk	: in	std_logic);
+
+	procedure axi_single_write(	address 	: in	integer; --AF support for 64-bit
+								value		: in	string;
+								base		: in	integer;
+								signal ms	: out	axi_ms_r;
+								signal sm	: in	axi_sm_r;
+								signal clk	: in	std_logic);
 								
 	procedure axi_single_read(	address 	: in	integer;
 								value		: out	integer;
+								signal ms	: out	axi_ms_r;
+								signal sm	: in	axi_sm_r;
+								signal clk	: in	std_logic;
+								msb			: in	natural := 31;
+								lsb			: in	natural := 0;
+								sex			: in	boolean := false);
+								
+	procedure axi_single_read(	address 	: in	integer; --AF support for 64-bit
+								value		: out	signed;
 								signal ms	: out	axi_ms_r;
 								signal sm	: in	axi_sm_r;
 								signal clk	: in	std_logic;
@@ -131,6 +164,18 @@ package psi_tb_axi_pkg is
 								sex			: in	boolean := false;
 								tol			: in	natural := 0);
 								
+	procedure axi_single_expect(address 	: in	integer; --AF support for 64-bit
+								value		: in	string;
+								base		: in	integer;
+								signal ms	: out	axi_ms_r;
+								signal sm	: in	axi_sm_r;
+								signal clk	: in	std_logic;
+								name		: in	string := "No Msg";
+								msb			: in	natural := 31;
+								lsb			: in	natural := 0;
+								sex			: in	boolean := false;
+								tol			: in	natural := 0);
+
 	-- Partial Transactions
 	procedure axi_apply_aw(	AxAddr		: in	integer;
 							AxSize		: in	std_logic_vector(2 downto 0);
@@ -157,6 +202,17 @@ package psi_tb_axi_pkg is
 	procedure axi_apply_wd_burst(	Beats		: in 	natural;
 									DataStart	: in	natural;
 									DataIncr	: in	natural;
+									WstrbFirst 	: in	std_logic_vector;
+									WstrbLast 	: in	std_logic_vector;
+									signal ms	: out	axi_ms_r;
+									signal sm	: in	axi_sm_r;
+									signal aclk	: in	std_logic;
+									VldLowCycles	: in	integer		:= 0);
+									
+	procedure axi_apply_wd_burst(	Beats		: in 	natural; --AF support for 64-bit
+									DataStart	: in	string;
+									DataIncr	: in	string;
+									Base	    : in	integer;
 									WstrbFirst 	: in	std_logic_vector;
 									WstrbLast 	: in	std_logic_vector;
 									signal ms	: out	axi_ms_r;
@@ -196,6 +252,17 @@ package psi_tb_axi_pkg is
 									signal aclk	: in	std_logic;
 									RdyLowCycles	: in	integer		:= 0);									
 									
+	procedure axi_expect_wd_burst(	Beats		: in 	natural; --AF support for 64-bit
+									DataStart	: in	string;
+									DataIncr	: in	string;
+									Base      : in  integer;
+									WstrbFirst 	: in	std_logic_vector;
+									WstrbLast 	: in	std_logic_vector;
+									signal ms	: in	axi_ms_r;
+									signal sm	: out	axi_sm_r;
+									signal aclk	: in	std_logic;
+									RdyLowCycles	: in	integer		:= 0);									
+									
 	procedure axi_apply_bresp(	Response	: in std_logic_vector(1 downto 0);
 								signal ms	: in	axi_ms_r;
 								signal sm	: out	axi_sm_r;
@@ -221,6 +288,16 @@ package psi_tb_axi_pkg is
 										signal aclk	: in	std_logic;
 										VldLowCycles	: in	integer		:= 0);
 										
+	procedure axi_apply_rresp_burst(	Beats		: in 	natural; --AF support for 64-bit
+										DataStart	: in	string;
+										DataIncr	: in	string;
+										Base      : in  integer;
+										Response	: in 	std_logic_vector(1 downto 0);
+										signal ms	: in	axi_ms_r;
+										signal sm	: out	axi_sm_r;
+										signal aclk	: in	std_logic;
+										VldLowCycles	: in	integer		:= 0);
+										
 	procedure axi_expect_rresp_single(	Data				: in	std_logic_vector;
 										Response			: in 	std_logic_vector(1 downto 0);
 										signal ms			: out	axi_ms_r;
@@ -239,6 +316,18 @@ package psi_tb_axi_pkg is
 										IgnoreData			: in	boolean := false;
 										IgnoreResponse		: in	boolean := false;
 										RdyLowCycles		: in	integer		:= 0);
+										
+	procedure axi_expect_rresp_burst(	Beats				: in 	natural; --AF support for 64-bit
+										DataStart			: in	string;
+										DataIncr			: in	string;
+										Base          : in  integer;
+										Response			: in 	std_logic_vector(1 downto 0);
+										signal ms			: out	axi_ms_r;
+										signal sm			: in	axi_sm_r;
+										signal aclk			: in	std_logic;
+										IgnoreData			: in	boolean := false;
+										IgnoreResponse		: in	boolean := false;
+										RdyLowCycles		: in	integer		:= 0);
 	
 end psi_tb_axi_pkg;
 
@@ -246,6 +335,134 @@ end psi_tb_axi_pkg;
 -- Package Body
 ------------------------------------------------------------------------------
 package body psi_tb_axi_pkg is
+
+	function  decimal_string_to_unsigned( decimal_string  : string;
+		                                    wanted_bitwidth : positive
+	                                     ) return unsigned is
+	  variable tmp_unsigned    : unsigned(wanted_bitwidth-1 downto 0) := (others => '0');
+	  variable character_value : integer;
+	begin
+	  for string_pos in decimal_string'range loop
+	    case decimal_string(string_pos) is
+	      when '0' => character_value := 0;
+	      when '1' => character_value := 1;
+	      when '2' => character_value := 2;
+	      when '3' => character_value := 3;
+	      when '4' => character_value := 4;
+	      when '5' => character_value := 5;
+	      when '6' => character_value := 6;
+	      when '7' => character_value := 7;
+	      when '8' => character_value := 8;
+	      when '9' => character_value := 9;
+	      when others => report("decimal_string_to_unsigned: Illegal number") severity failure;
+	    end case;
+	    tmp_unsigned := resize(tmp_unsigned * 10, wanted_bitwidth);
+	    tmp_unsigned := tmp_unsigned + character_value;
+	  end loop;
+	  return tmp_unsigned;
+	end function decimal_string_to_unsigned;
+
+	function  decimal_string_to_signed( decimal_string  : string;
+		                                  wanted_bitwidth : positive
+	                                   ) return signed is
+	  variable tmp_signed      : signed(wanted_bitwidth-1 downto 0) := (others => '0');
+	  variable character_value : integer;
+	begin
+	  for string_pos in decimal_string'range loop
+	    case decimal_string(string_pos) is
+	      when '0' => character_value := 0;
+	      when '1' => character_value := 1;
+	      when '2' => character_value := 2;
+	      when '3' => character_value := 3;
+	      when '4' => character_value := 4;
+	      when '5' => character_value := 5;
+	      when '6' => character_value := 6;
+	      when '7' => character_value := 7;
+	      when '8' => character_value := 8;
+	      when '9' => character_value := 9;
+	      when others => report("decimal_string_to_signed: Illegal number") severity failure;
+	    end case;
+	    tmp_signed := resize(tmp_signed * 10, wanted_bitwidth);
+	    tmp_signed := tmp_signed + character_value;
+	  end loop;
+	  return tmp_signed;
+	end function decimal_string_to_signed;
+
+	function  hex_string_to_unsigned( hex_string  : string;
+		                                wanted_bitwidth : positive
+	                                 ) return unsigned is
+	  variable tmp_unsigned    : unsigned(wanted_bitwidth-1 downto 0) := (others => '0');
+	  variable character_value : integer;
+	begin
+	  for string_pos in hex_string'range loop
+	    case hex_string(string_pos) is
+	      when '0' => character_value := 0;
+	      when '1' => character_value := 1;
+	      when '2' => character_value := 2;
+	      when '3' => character_value := 3;
+	      when '4' => character_value := 4;
+	      when '5' => character_value := 5;
+	      when '6' => character_value := 6;
+	      when '7' => character_value := 7;
+	      when '8' => character_value := 8;
+	      when '9' => character_value := 9;
+	      when 'A' => character_value := 10;
+	      when 'B' => character_value := 11;
+	      when 'C' => character_value := 12;
+	      when 'D' => character_value := 13;
+	      when 'E' => character_value := 14;
+	      when 'F' => character_value := 15;
+	      when 'a' => character_value := 10;
+	      when 'b' => character_value := 11;
+	      when 'c' => character_value := 12;
+	      when 'd' => character_value := 13;
+	      when 'e' => character_value := 14;
+	      when 'f' => character_value := 15;
+	      when others => report("hex_string_to_unsigned: Illegal number") severity failure;
+	    end case;
+	    tmp_unsigned := resize(tmp_unsigned * 16, wanted_bitwidth);
+	    tmp_unsigned := tmp_unsigned + character_value;
+	  end loop;
+	  return tmp_unsigned;
+	end function hex_string_to_unsigned;
+
+	function  hex_string_to_signed( hex_string  : string;
+		                              wanted_bitwidth : positive
+	                               ) return signed is
+	  variable tmp_signed      : signed(wanted_bitwidth-1 downto 0) := (others => '0');
+	  variable character_value : integer;
+	begin
+	  for string_pos in hex_string'range loop
+	    case hex_string(string_pos) is
+	      when '0' => character_value := 0;
+	      when '1' => character_value := 1;
+	      when '2' => character_value := 2;
+	      when '3' => character_value := 3;
+	      when '4' => character_value := 4;
+	      when '5' => character_value := 5;
+	      when '6' => character_value := 6;
+	      when '7' => character_value := 7;
+	      when '8' => character_value := 8;
+	      when '9' => character_value := 9;
+	      when 'A' => character_value := 10;
+	      when 'B' => character_value := 11;
+	      when 'C' => character_value := 12;
+	      when 'D' => character_value := 13;
+	      when 'E' => character_value := 14;
+	      when 'F' => character_value := 15;
+	      when 'a' => character_value := 10;
+	      when 'b' => character_value := 11;
+	      when 'c' => character_value := 12;
+	      when 'd' => character_value := 13;
+	      when 'e' => character_value := 14;
+	      when 'f' => character_value := 15;
+	      when others => report("hex_string_to_signed: Illegal number") severity failure;
+	    end case;
+	    tmp_signed := resize(tmp_signed * 16, wanted_bitwidth);
+	    tmp_signed := tmp_signed + character_value;
+	  end loop;
+	  return tmp_signed;
+	end function hex_string_to_signed;
 
 	procedure axi_master_init(signal ms	: out	axi_ms_r) is
 	begin
@@ -274,7 +491,8 @@ package body psi_tb_axi_pkg is
 		ms.aruser       <= std_logic_vector(to_unsigned(0, ms.aruser'length));
 		ms.arvalid      <= '0'; 
 		ms.rready		<= '0';                                 
-		ms.wdata        <= std_logic_vector(to_unsigned(0, ms.wdata'length));
+		--ms.wdata        <= std_logic_vector(to_unsigned(0, ms.wdata'length));
+		ms.wdata        <= (ms.wdata'length-1 downto 0 => '0'); --AF
 		ms.wstrb        <= std_logic_vector(to_unsigned(0, ms.wstrb'length));
 		ms.wlast        <= '0';
 		ms.wuser        <= std_logic_vector(to_unsigned(0, ms.wuser'length));
@@ -286,7 +504,8 @@ package body psi_tb_axi_pkg is
 	begin	                             
 		sm.arready     	<= '0';		                             
 		sm.rid         	<= std_logic_vector(to_unsigned(0, sm.rid'length));  
-		sm.rdata		<= std_logic_vector(to_unsigned(0, sm.rdata'length));  
+		--sm.rdata		<= std_logic_vector(to_unsigned(0, sm.rdata'length));  
+		sm.rdata		<= (sm.rdata'length-1 downto 0 => '0'); --AF
 		sm.rresp        <= "00";
 		sm.rlast        <= '0';
 		sm.ruser        <= std_logic_vector(to_unsigned(0, sm.ruser'length));
@@ -311,13 +530,58 @@ package body psi_tb_axi_pkg is
 		ms.awid 		<= std_logic_vector(to_unsigned(0, ms.awid'length));  
 		ms.awaddr  		<= std_logic_vector(to_unsigned(address, ms.awaddr'length));
 		ms.awlen   		<= (others => '0');
-		ms.awsize  		<= std_logic_vector(to_unsigned(log2(ms.wdata'length/8), ms.awsize'length));
+		--ms.awsize  		<= std_logic_vector(to_unsigned(log2(ms.wdata'length/8), ms.awsize'length)); --log2 use integer
+		ms.awsize  		<= std_logic_vector(to_unsigned(log2(ms.wstrb'length), ms.awsize'length)); --AF
 		ms.awburst 		<= "01";
 		ms.awvalid 		<= '1';
 		-- wait for address accepted
 		wait until rising_edge(clk) and sm.awready = '1';
 		ms.awvalid 		<= '0';
 		ms.wdata		<= std_logic_vector(to_signed(value, ms.wdata'length));
+		ms.wstrb		<= std_logic_vector(to_signed(-1, ms.wstrb'length));
+		ms.wlast		<= '1';
+		ms.wvalid		<= '1';
+		-- wait for data accepted
+		wait until rising_edge(clk) and sm.wready = '1';
+		ms.wlast		<= '0';
+		ms.wvalid		<= '0';
+		ms.bready       <= '1';  
+		-- wait for response
+		wait until rising_edge(clk) and sm.bvalid = '1';
+		ms.bready       <= '0';  
+		StdlvCompareStdlv(xRESP_OKAY_c, sm.bresp, "axi_single_write(): received negative response!");
+	end procedure;
+
+	procedure axi_single_write(	address 	: in	integer; --AF support for 64-bit
+								value		: in	string;
+								base    : in  integer;
+								signal ms	: out	axi_ms_r;
+								signal sm	: in	axi_sm_r;
+								signal clk	: in	std_logic) is
+	begin
+		-- synchronize
+		wait until rising_edge(clk);
+		-- Signal write
+		ms.awid 		 <= std_logic_vector(to_unsigned(0, ms.awid'length));  
+		ms.awaddr  		<= std_logic_vector(to_unsigned(address, ms.awaddr'length));
+		ms.awlen   		<= (others => '0');
+		--ms.awsize  		<= std_logic_vector(to_unsigned(log2(ms.wdata'length/8), ms.awsize'length)); --log2 use integer
+		ms.awsize  		<= std_logic_vector(to_unsigned(log2(ms.wstrb'length), ms.awsize'length));
+		ms.awburst 		<= "01";
+		ms.awvalid 		<= '1';
+		-- wait for address accepted
+		wait until rising_edge(clk) and sm.awready = '1';
+		ms.awvalid 		<= '0';
+		--ms.wdata		<= std_logic_vector(to_signed(value, ms.wdata'length));
+		case base is
+			when 10 =>
+				ms.wdata		<= std_logic_vector(decimal_string_to_signed(value, ms.wdata'length));
+			when 16 =>
+				ms.wdata		<= std_logic_vector(hex_string_to_signed(value, ms.wdata'length));
+			when others =>
+				report "Procedure axi_single_write: unsupported base value" severity failure;
+		end case;
+
 		ms.wstrb		<= std_logic_vector(to_signed(-1, ms.wstrb'length));
 		ms.wlast		<= '1';
 		ms.wvalid		<= '1';
@@ -340,7 +604,8 @@ package body psi_tb_axi_pkg is
 								msb			: in	natural := 31;
 								lsb			: in	natural := 0;
 								sex			: in	boolean := false) is
-		variable valueStdlv 	:	std_logic_vector(31 downto 0);	
+		--variable valueStdlv 	:	std_logic_vector(31 downto 0);	
+		variable valueStdlv 	:	std_logic_vector(ms.wdata'length-1 downto 0);	
 	begin
 		-- synchronize
 		wait until rising_edge(clk);
@@ -348,7 +613,8 @@ package body psi_tb_axi_pkg is
 		ms.arid 		<= std_logic_vector(to_unsigned(0, ms.awid'length));  
 		ms.araddr  		<= std_logic_vector(to_unsigned(address, ms.awaddr'length));
 		ms.arlen   		<= (others => '0');
-		ms.arsize  		<= std_logic_vector(to_unsigned(log2(ms.wdata'length/8), ms.awsize'length));
+		--ms.arsize  		<= std_logic_vector(to_unsigned(log2(ms.wdata'length/8), ms.awsize'length)); --log2 use integer
+		ms.arsize  		<= std_logic_vector(to_unsigned(log2(ms.wstrb'length), ms.awsize'length));
 		ms.arburst 		<= "01";
 		ms.arvalid 		<= '1';
 		-- wait for address accepted
@@ -362,11 +628,56 @@ package body psi_tb_axi_pkg is
 		valueStdlv := sm.rdata;
 		valueStdlv(msb-lsb downto 0) := valueStdlv(msb downto lsb);
 		if sex then
-			valueStdlv(31 downto msb-lsb+1) := (others => valueStdlv(msb));
+			--valueStdlv(31 downto msb-lsb+1) := (others => valueStdlv(msb));
+			valueStdlv(ms.wdata'length-1 downto msb-lsb+1) := (others => valueStdlv(msb));
 		else
-			valueStdlv(31 downto msb-lsb+1) := (others => '0');
+			--valueStdlv(31 downto msb-lsb+1) := (others => '0');
+			valueStdlv(ms.wdata'length-1 downto msb-lsb+1) := (others => '0');
 		end if;
 		value := to_integer(signed(valueStdlv));
+		StdlvCompareStdlv(xRESP_OKAY_c, sm.rresp, "axi_single_read(): received negative response!");
+	end procedure;
+	
+	procedure axi_single_read(	address 	: in	integer; --AF support for 64-bit
+								value		: out	signed;
+								signal ms	: out	axi_ms_r;
+								signal sm	: in	axi_sm_r;
+								signal clk	: in	std_logic;
+								msb			: in	natural := 31;
+								lsb			: in	natural := 0;
+								sex			: in	boolean := false) is
+		--variable valueStdlv 	:	std_logic_vector(31 downto 0);	
+		variable valueStdlv 	:	std_logic_vector(ms.wdata'length-1 downto 0);	
+	begin
+		-- synchronize
+		wait until rising_edge(clk);
+		-- Signal write
+		ms.arid 		<= std_logic_vector(to_unsigned(0, ms.awid'length));  
+		ms.araddr  		<= std_logic_vector(to_unsigned(address, ms.awaddr'length));
+		ms.arlen   		<= (others => '0');
+		--ms.arsize  		<= std_logic_vector(to_unsigned(log2(ms.wdata'length/8), ms.awsize'length)); --log2 use integer
+		ms.arsize  		<= std_logic_vector(to_unsigned(log2(ms.wstrb'length), ms.awsize'length));
+		ms.arburst 		<= "01";
+		ms.arvalid 		<= '1';
+		-- wait for address accepted
+		wait until rising_edge(clk) and sm.arready = '1';
+		ms.arvalid 		<= '0';
+		ms.rready		<= '1';
+		-- wait for data transmitted
+		wait until rising_edge(clk) and sm.rvalid = '1';	
+		ms.rready		<= '0';
+		-- Mask and correctly shift value
+		valueStdlv := sm.rdata;
+		valueStdlv(msb-lsb downto 0) := valueStdlv(msb downto lsb);
+		if sex then
+			--valueStdlv(31 downto msb-lsb+1) := (others => valueStdlv(msb));
+			valueStdlv(ms.wdata'length-1 downto msb-lsb+1) := (others => valueStdlv(msb));
+		else
+			--valueStdlv(31 downto msb-lsb+1) := (others => '0');
+			valueStdlv(ms.wdata'length-1 downto msb-lsb+1) := (others => '0');
+		end if;
+		--value := to_integer(signed(valueStdlv));
+		value := signed(valueStdlv);
 		StdlvCompareStdlv(xRESP_OKAY_c, sm.rresp, "axi_single_read(): received negative response!");
 	end procedure;
 	
@@ -380,12 +691,43 @@ package body psi_tb_axi_pkg is
 								lsb			: in	natural := 0;
 								sex			: in	boolean := false;
 								tol			: in	natural := 0) is
-		variable val : integer;
-		variable valuePos_v : integer;
-		variable valPos_v : integer;
+		variable val       : integer;
+		variable valuePos_v: integer;
+		variable valPos_v  : integer;
 	begin	
 		axi_single_read(address, val, ms, sm, clk, msb, lsb, sex);
 		IntCompare(value, val, "axi_single_expect() received unexpected result - " & name, tol);
+	end procedure;
+	
+	procedure axi_single_expect(address 	: in	integer; --AF support for 64-bit
+								value		: in	string;
+								base    : in  integer;
+								signal ms	: out	axi_ms_r;
+								signal sm	: in	axi_sm_r;
+								signal clk	: in	std_logic;
+								name		: in	string := "No Msg";
+								msb			: in	natural := 31;
+								lsb			: in	natural := 0;
+								sex			: in	boolean := false;
+								tol			: in	natural := 0) is
+		variable val          : signed(ms.wdata'length-1 downto 0);
+		variable tmpValSign_v : signed(ms.wdata'length-1 downto 0);
+	begin	
+		axi_single_read(address, val, ms, sm, clk, msb, lsb, sex);
+		--IntCompare(value, val, "axi_single_expect() received unexpected result - " & name, tol);
+		case base is
+			when 10 =>
+				tmpValSign_v := decimal_string_to_signed(value, ms.wdata'length);
+			when 16 =>
+				tmpValSign_v := hex_string_to_signed(value, ms.wdata'length);
+			when others =>
+				report "Procedure axi_single_expect: unsupported base value" severity failure;
+		end case;
+		SignCompare2 (	Expected	=> tmpValSign_v, --: in signed;
+										Actual		=> val, --: in signed;
+										Msg				=> "axi_single_expect() received unexpected result - " & name, --: in string;
+										Tolerance	=> tol --: in integer := 0;
+								 	);
 	end procedure;
 	
 	procedure axi_apply_aw(	AxAddr		: in	integer;
@@ -466,6 +808,61 @@ package body psi_tb_axi_pkg is
 			ms.wdata <= DataStdlv_v;			
 			wait until rising_edge(aclk) and sm.wready = '1';
 			DataCnt_v := DataCnt_v + DataIncr;
+			-- Low cycles if required
+			if not (beat = Beats) then
+				for lc in 1 to VldLowCycles loop
+					ms.wvalid <= '0';
+					wait until rising_edge(aclk);
+				end loop;
+				ms.wvalid <= '1';
+			end if;
+		end loop;
+		axi_master_init(ms);
+	end procedure;
+	
+	procedure axi_apply_wd_burst(	Beats		: in 	natural; --AF support for 64-bit
+									DataStart	: in	string;
+									DataIncr	: in	string;
+									Base      : in  integer;
+									WstrbFirst 	: in	std_logic_vector;
+									WstrbLast 	: in	std_logic_vector;
+									signal ms	: out	axi_ms_r;
+									signal sm	: in	axi_sm_r;
+									signal aclk	: in	std_logic;
+									VldLowCycles	: in	integer		:= 0) is
+		variable DataCntSign_v	: signed(ms.wdata'range);
+		variable DataIncrSign_v : signed(ms.wdata'range);
+		variable DataStdlv_v	  : std_logic_vector(ms.wdata'range);
+	begin		
+		ms.wvalid 	<= '1';	
+		--DataCnt_v := DataStart;
+		case Base is
+			when 10 =>
+				DataCntSign_v  := decimal_string_to_signed(DataStart, ms.wdata'length);
+				DataIncrSign_v := decimal_string_to_signed(DataIncr, ms.wdata'length);
+			when 16 =>
+				DataCntSign_v  := hex_string_to_signed(DataStart, ms.wdata'length);
+				DataIncrSign_v := hex_string_to_signed(DataIncr, ms.wdata'length);
+			when others =>
+				report "Procedure axi_apply_wd_burst: unsupported base value" severity failure;
+		end case;
+		for beat in 1 to Beats loop	
+			-- last transfer
+			if beat = Beats then
+				ms.wlast <= '1';
+				ms.wstrb <= WstrbLast;	
+			elsif beat = 1 then
+				ms.wstrb <= WstrbFirst;
+			else
+				ms.wstrb <= std_logic_vector(to_signed(-1, ms.wstrb'length));
+			end if;
+			-- Apply Data
+			--DataStdlv_v := std_logic_vector(to_signed(DataCnt_v, DataStdlv_v'length));
+			DataStdlv_v := std_logic_vector(DataCntSign_v);
+			ms.wdata <= DataStdlv_v;			
+			wait until rising_edge(aclk) and sm.wready = '1';
+			--DataCnt_v := DataCnt_v + DataIncr;
+			DataCntSign_v := DataCntSign_v + DataIncrSign_v;
 			-- Low cycles if required
 			if not (beat = Beats) then
 				for lc in 1 to VldLowCycles loop
@@ -580,6 +977,68 @@ package body psi_tb_axi_pkg is
 		sm.wready <= '0';
 	end procedure;
 	
+	procedure axi_expect_wd_burst(	Beats		: in 	natural; --AF support for 64-bit
+									DataStart	: in	string;
+									DataIncr	: in	string;
+									Base      : in  integer;
+									WstrbFirst 	: in	std_logic_vector;
+									WstrbLast 	: in	std_logic_vector;
+									signal ms	: in	axi_ms_r;
+									signal sm	: out	axi_sm_r;
+									signal aclk	: in	std_logic;
+									RdyLowCycles	: in	integer		:= 0) is
+		variable DataCntUnsign_v	: unsigned(ms.wdata'range);
+		variable DataIncrUnsign_v : unsigned(ms.wdata'range);
+		variable DataStdlv_v	  : std_logic_vector(ms.wdata'range);									
+	begin
+		sm.wready <= '1';
+		--DataCnt_v := DataStart;
+		case Base is
+			when 10 =>
+				DataCntUnsign_v  := decimal_string_to_unsigned(DataStart, ms.wdata'length);
+				DataIncrUnsign_v := decimal_string_to_unsigned(DataIncr, ms.wdata'length);
+			when 16 =>
+				DataCntUnsign_v  := hex_string_to_unsigned(DataStart, ms.wdata'length);
+				DataIncrUnsign_v := hex_string_to_unsigned(DataIncr, ms.wdata'length);
+			when others =>
+				report "Procedure axi_expect_wd_burst: unsupported base value" severity failure;
+		end case;
+		for beat in 1 to Beats loop	
+			wait until rising_edge(aclk) and ms.wvalid = '1';
+			-- last transfer
+			if beat = Beats then
+				StdlCompare(1, ms.wlast, "WLAST not asserted at end of burst transfer");
+				StdlvCompareStdlv(WstrbLast, ms.wstrb, "wrong WSTRB at end of burst transfer");
+			elsif beat = 1 then
+				StdlCompare(0, ms.wlast, "WLAST asserted at beginning of burst transfer");
+				StdlvCompareStdlv(WstrbFirst, ms.wstrb, "wrong WSTRB at beginning of burst transfer");
+			else
+				StdlCompare(0, ms.wlast, "WLAST asserted in the middle of burst transfer");
+				StdlvCompareInt (-1, ms.wstrb, "wrong WSTRB in the middle of burst transfer");
+			end if;
+			-- Apply Data
+			--DataStdlv_v := std_logic_vector(to_unsigned(DataCnt_v, DataStdlv_v'length));	
+			DataStdlv_v := std_logic_vector(DataCntUnsign_v);	
+			for byte in 0 to ms.wdata'length/8-1 loop
+				-- only check data that is used
+				if ms.wstrb(byte) = '1' then
+					StdlvCompareStdlv(DataStdlv_v(byte*8-1 downto byte*8), ms.wdata(byte*8-1 downto byte*8), "wrong WDATA during butst transfer - byte " & str(byte));
+				end if;
+			end loop;			
+			--DataCnt_v := DataCnt_v + DataIncr;	
+			DataCntUnsign_v := DataCntUnsign_v + DataIncrUnsign_v;
+			-- Low cycles if required
+			if not (beat = Beats) then
+				for lc in 1 to RdyLowCycles loop
+					sm.wready <= '0';
+					wait until rising_edge(aclk) and ms.wvalid  = '1';
+				end loop;
+				sm.wready <= '1';
+			end if;			
+		end loop;
+		sm.wready <= '0';
+	end procedure;
+	
 	procedure axi_apply_bresp(	Response	: in 	std_logic_vector(1 downto 0);
 								signal ms	: in	axi_ms_r;
 								signal sm	: out	axi_sm_r;
@@ -654,6 +1113,57 @@ package body psi_tb_axi_pkg is
 		axi_slave_init(sm);
 	end procedure;	
 	
+	procedure axi_apply_rresp_burst(	Beats		: in 	natural; --AF support for 64-bit
+										DataStart	: in	string;
+										DataIncr	: in	string;
+										Base      : in  integer;
+										Response	: in 	std_logic_vector(1 downto 0);
+										signal ms	: in	axi_ms_r;
+										signal sm	: out	axi_sm_r;
+										signal aclk	: in	std_logic;
+										VldLowCycles	: in	integer		:= 0) is
+		variable DataCntUnsign_v	: unsigned(ms.wdata'range);
+		variable DataIncrUnsign_v : unsigned(ms.wdata'range);
+		variable DataStdlv_v	  : std_logic_vector(ms.wdata'range);									
+	begin		
+		sm.rvalid 	<= '1';	
+		sm.rlast 	<= '0';
+		--DataCnt_v := DataStart;
+		case Base is
+			when 10 =>
+				DataCntUnsign_v  := decimal_string_to_unsigned(DataStart, ms.wdata'length);
+				DataIncrUnsign_v := decimal_string_to_unsigned(DataIncr, ms.wdata'length);
+			when 16 =>
+				DataCntUnsign_v  := hex_string_to_unsigned(DataStart, ms.wdata'length);
+				DataIncrUnsign_v := hex_string_to_unsigned(DataIncr, ms.wdata'length);
+			when others =>
+				report "Procedure axi_apply_rresp_burst: unsupported base value" severity failure;
+		end case;
+		sm.rresp <= Response;
+		for beat in 1 to Beats loop	
+			-- last transfer
+			if beat = Beats then
+				sm.rlast <= '1';
+			end if;
+			-- Apply Data
+			--DataStdlv_v := std_logic_vector(to_unsigned(DataCnt_v, DataStdlv_v'length));
+			DataStdlv_v := std_logic_vector(DataCntUnsign_v);
+			sm.rdata <= DataStdlv_v;			
+			wait until rising_edge(aclk) and ms.rready = '1';
+			--DataCnt_v := DataCnt_v + DataIncr;
+			DataCntUnsign_v := DataCntUnsign_v + DataIncrUnsign_v;
+			-- Low cycles if required
+			if not (beat = Beats) then
+				for lc in 1 to VldLowCycles loop
+					sm.rvalid <= '0';
+					wait until rising_edge(aclk) and ms.rready = '1';
+				end loop;
+				sm.rvalid <= '1';
+			end if;
+		end loop;
+		axi_slave_init(sm);
+	end procedure;	
+	
 	procedure axi_expect_rresp_single(	Data			: in	std_logic_vector;
 										Response		: in 	std_logic_vector(1 downto 0);
 										signal ms		: out	axi_ms_r;
@@ -708,6 +1218,69 @@ package body psi_tb_axi_pkg is
 				StdlvCompareStdlv(DataStdlv_v, sm.rdata, "wrong RDATA");
 			end if;				
 			DataCnt_v := DataCnt_v + DataIncr;
+			-- Response must be OKAY for all beats (if okay is expected)
+			if not IgnoreResponse and Response = xRESP_OKAY_c then
+				StdlvCompareStdlv(Response, sm.rresp, "wrong RRESP");	
+			end if;
+			-- Low cycles if required
+			if not (beat = Beats) then
+				for lc in 1 to RdyLowCycles loop
+					ms.rready <= '0';
+					wait until rising_edge(aclk) and sm.rvalid = '1';
+				end loop;
+				ms.rready <= '1';
+			end if;
+		end loop;
+		ms.rready <= '0';
+	end procedure;	
+	
+	procedure axi_expect_rresp_burst(	Beats			: in 	natural; --AF support for 64-bit
+										DataStart		: in	string;
+										DataIncr		: in	string;
+										Base        : in  integer;
+										Response		: in 	std_logic_vector(1 downto 0);
+										signal ms		: out	axi_ms_r;
+										signal sm		: in	axi_sm_r;
+										signal aclk		: in	std_logic;
+										IgnoreData		: in	boolean := false;
+										IgnoreResponse	: in	boolean := false;
+										RdyLowCycles	: in	integer		:= 0) is
+		variable DataCntUnsign_v	: unsigned(ms.wdata'range);
+		variable DataIncrUnsign_v : unsigned(ms.wdata'range);
+		variable DataStdlv_v	  : std_logic_vector(ms.wdata'range);									
+	begin		
+		ms.rready <= '1';
+		--DataCnt_v := DataStart;
+		case Base is
+			when 10 =>
+				DataCntUnsign_v  := decimal_string_to_unsigned(DataStart, ms.wdata'length);
+				DataIncrUnsign_v := decimal_string_to_unsigned(DataIncr, ms.wdata'length);
+			when 16 =>
+				DataCntUnsign_v  := hex_string_to_unsigned(DataStart, ms.wdata'length);
+				DataIncrUnsign_v := hex_string_to_unsigned(DataIncr, ms.wdata'length);
+			when others =>
+				report "Procedure axi_expect_rresp_burst: unsupported base value" severity failure;
+		end case;
+		for beat in 1 to Beats loop	
+			wait until rising_edge(aclk) and sm.rvalid = '1';
+			-- last transfer
+			if beat = Beats then
+				StdlCompare(1, sm.rlast, "wrong RLAST");
+				-- check if last response is error (if error is expected) 
+				if not IgnoreResponse and Response /= xRESP_OKAY_c then
+					StdlvCompareStdlv(Response, sm.rresp, "wrong RRESP");	
+				end if;
+			else
+				StdlCompare(0, sm.rlast, "wrong RLAST");
+			end if;
+			-- Check Data
+			--DataStdlv_v := std_logic_vector(to_unsigned(DataCnt_v, DataStdlv_v'length));
+			DataStdlv_v := std_logic_vector(DataCntUnsign_v);
+			if not IgnoreData then
+				StdlvCompareStdlv(DataStdlv_v, sm.rdata, "wrong RDATA");
+			end if;				
+			--DataCnt_v := DataCnt_v + DataIncr;
+			DataCntUnsign_v := DataCntUnsign_v + DataIncrUnsign_v;
 			-- Response must be OKAY for all beats (if okay is expected)
 			if not IgnoreResponse and Response = xRESP_OKAY_c then
 				StdlvCompareStdlv(Response, sm.rresp, "wrong RRESP");	
