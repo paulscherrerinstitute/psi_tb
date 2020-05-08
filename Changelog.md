@@ -1,3 +1,8 @@
+## 2.6.0
+*Added Features
+  *In psi_tb_compare_pkg added SignCompare2 (result print hstr)
+  *In psi_tb_axi_pkg modification on axi utilities to support 64 bits (overload)
+
 ## 2.5.0
 * Added Features
   * Add documentation of pkg function
