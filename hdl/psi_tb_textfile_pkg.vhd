@@ -175,7 +175,8 @@ package body psi_tb_textfile_pkg is
 					assert Sig = Spl
 					report ErrorPrefix & ": Wrong Sample, Msg=" & Msg & ", line=" & integer'image(lineNr) & " column=" & integer'image(colNr) & LF &
 							   " --> Expected " & integer'image(Spl) & " [0x" & hstr(std_logic_vector(to_signed(Spl, 32))) & "]" & LF &
-							   " --> Received " & integer'image(Sig) & " [0x" & hstr(std_logic_vector(to_signed(Sig, 32))) & "]"
+							   " --> Received " & integer'image(Sig) & " [0x" & hstr(std_logic_vector(to_signed(Sig, 32))) & "]" & LF &
+							   " --> File " & Filepath
 					severity error;
 					colNr := colNr + 1;
 				end loop;
