@@ -45,7 +45,7 @@ package psi_tb_compare_pkg is
   procedure StdlCompare(Expected : in std_logic;
                         Actual   : in std_logic;
                         Msg      : in string;
-                        Prefix   : in string := "###ERROR###: ");                      
+                        Prefix   : in string := "###ERROR###: ");
 
   -- integer compare to integer					
   procedure IntCompare(Expected  : in integer;
@@ -67,6 +67,13 @@ package psi_tb_compare_pkg is
                         Msg       : in string;
                         Tolerance : in integer := 0;
                         Prefix    : in string  := "###ERROR###: ");
+
+  -- signed compare to signed (output message is hex string to handle data width > 32)
+  procedure SignCompare2(Expected  : in signed;
+                         Actual    : in signed;
+                         Msg       : in string;
+                         Tolerance : in integer := 0;
+                         Prefix    : in string  := "###ERROR###: ");
 
   -- unsigned compare to unsigned						
   procedure UsignCompare(Expected  : in unsigned;
@@ -166,7 +173,7 @@ package body psi_tb_compare_pkg is
 						", Received " & str(Actual) & "]"
     severity error;
   end procedure;
-  
+
   -- *** StdlCompare with a stdl ***
   procedure StdlCompare(Expected : in std_logic;
                         Actual   : in std_logic;
@@ -228,6 +235,21 @@ package body psi_tb_compare_pkg is
 						" [Expected " & to_string(Expected) & 
 						", Received " & to_string(Actual) & 
 						", Tolerance " & to_string(Tolerance) & "]"
+    severity error;
+  end procedure;
+
+  -- *** SignCompare2 ***
+  procedure SignCompare2(Expected  : in signed;
+                         Actual    : in signed;
+                         Msg       : in string;
+                         Tolerance : in integer := 0;
+                         Prefix    : in string  := "###ERROR###: ") is
+  begin
+    assert (Actual >= Expected - Tolerance) and (Actual <= Expected + Tolerance)
+    report Prefix & Msg & 
+            " [Expected 0x" & hstr(std_logic_vector(Expected)) & 
+            ", Received 0x" & hstr(std_logic_vector(Actual)) & 
+            ", Tolerance " & to_string(Tolerance) & "]"
     severity error;
   end procedure;
 
