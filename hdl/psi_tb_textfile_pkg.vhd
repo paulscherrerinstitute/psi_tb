@@ -59,6 +59,7 @@ package psi_tb_textfile_pkg is
                                    IgnoreLines : in natural   := 0;
                                    DataOnlyOnVld : in boolean := false);
 
+
    -- Read a textfile and compare it column by column to signals
    procedure CheckTextfileContent(signal Clk    : in std_logic;
                                     signal Rdy    : out std_logic; -- Pass PsiTextfile_SigUnused if Rdy is not used
@@ -69,7 +70,8 @@ package psi_tb_textfile_pkg is
                                     ErrorPrefix   : in string   := "###ERROR###";
                                     MaxLines      : in integer  := -1; -- -1 = infinite, else number of lines      
                                     IgnoreLines   : in natural  := 0;
-                                    Tolerance     : in natural  := 0);
+                                    Tolerance     : in natural  := 0;
+                                    Msg           : in string := "None");
 
    -- write a textfile with header line 1 name of data & second line FixPoint format
    procedure WriteTextfile(signal Clk        : in std_logic;
@@ -146,7 +148,8 @@ package body psi_tb_textfile_pkg is
                                     ErrorPrefix   : in string   := "###ERROR###";
                                     MaxLines      : in integer := -1;
                                     IgnoreLines   : in natural := 0;
-                                    Tolerance     : in natural := 0) is
+                                    Tolerance     : in natural := 0;
+                                    Msg           : in string := "None") is
       file fp         : text;
       variable ln     : line;
       variable Spl    : integer;
@@ -156,7 +159,6 @@ package body psi_tb_textfile_pkg is
    begin
       -- Open File
       file_open(fp, Filepath, read_mode);
-
       -- Check output
       while (not endfile(fp)) and ((lineNr <= MaxLines) or (MaxLines < 0)) loop
          -- Ignore header lines if required      
@@ -175,7 +177,8 @@ package body psi_tb_textfile_pkg is
                assert abs(Sig - Spl) <= Tolerance
                report ErrorPrefix & ": Wrong Sample, line=" & integer'image(lineNr) & " column=" & integer'image(colNr) & LF &
                         " --> Expected " & integer'image(Spl) & " [0x" & hstr(std_logic_vector(to_signed(Spl, 32))) & "]" & LF &
-                        " --> Received " & integer'image(Sig) & " [0x" & hstr(std_logic_vector(to_signed(Sig, 32))) & "]"
+                        " --> Received " & integer'image(Sig) & " [0x" & hstr(std_logic_vector(to_signed(Sig, 32))) & "]"& LF &
+							          " --> File " & Filepath
                severity error;
                colNr := colNr + 1;
             end loop;
@@ -227,58 +230,57 @@ package body psi_tb_textfile_pkg is
          file_open(file_status, fp, Filepath, WRITE_MODE);
       end if;
 
-      if lineNr = 1 then
-         if time_sim = false then
-            for j in 0 to Data'length - 1 loop
-               if j = Data'length - 1 then
-                  write(ln, Name(j));
-               else
-                  write(ln, Name(j));
-                  write(ln, spacer);
-               end if;
-            end loop;
-            writeline(fp, ln);
-            lineNr := lineNr + 1;
-         else
-            for j in 0 to Data'length loop
-               if j = Data'length then
-                  write(ln, time_simu);
-               else
-                  write(ln, Name(j));
-                  write(ln, spacer);
-               end if;
-            end loop;
-            writeline(fp, ln);
-            lineNr := lineNr + 1;
-         end if;
-      else
-         if time_sim = false then
-            for j in 0 to Data'length - 1 loop
-               if j = Data'length - 1 then
-                  write(ln, to_string(Data(j)));
-               else
-                  write(ln, to_string(Data(j)));
-                  write(ln, spacer);
-               end if;
-            end loop;
-            writeline(fp, ln);
-            lineNr := lineNr + 1;
-         else
-            for j in 0 to Data'length loop
-               if j = Data'length then
-                  write(ln, now);
-               else
-                  write(ln, to_string(Data(j)));
-                  write(ln, spacer);
-               end if;
-            end loop;
-            writeline(fp, ln);
-            lineNr := lineNr + 1;
-         end if;
-         end if;
-      end loop;
-      -- Close File
-      file_close(fp);
-   end procedure;
-
+		if lineNr = 1 then
+			if time_sim = false then
+				for j in 0 to Data'length - 1 loop
+					if j = Data'length - 1 then
+						write(ln, Name(j));
+					else
+						write(ln, Name(j));
+						write(ln, spacer);
+					end if;
+				end loop;
+				writeline(fp, ln);
+				lineNr := lineNr + 1;
+			else
+				for j in 0 to Data'length loop
+					if j = Data'length then
+						write(ln, time_simu);
+					else
+						write(ln, Name(j));
+						write(ln, spacer);
+					end if;
+				end loop;
+				writeline(fp, ln);
+				lineNr := lineNr + 1;
+			end if;
+		else
+			if time_sim = false then
+				for j in 0 to Data'length - 1 loop
+					if j = Data'length - 1 then
+						write(ln, work.psi_tb_txt_util.to_string(Data(j)));
+					else
+						write(ln, work.psi_tb_txt_util.to_string(Data(j)));
+						write(ln, spacer);
+					end if;
+				end loop;
+				writeline(fp, ln);
+				lineNr := lineNr + 1;
+			else
+				for j in 0 to Data'length loop
+					if j = Data'length then
+						write(ln, now);
+					else
+						write(ln, work.psi_tb_txt_util.to_string(Data(j)));
+						write(ln, spacer);
+					end if;
+				end loop;
+				writeline(fp, ln);
+				lineNr := lineNr + 1;
+			end if;
+			end if;
+		end loop;
+		-- Close File
+		file_close(fp);
+	end procedure;
 end;
