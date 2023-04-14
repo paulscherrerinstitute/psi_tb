@@ -38,7 +38,7 @@ Alternatively the repository [psi\_fpga\_all](https://github.com/paulscherrerins
 * TCL
   * [PsiSim](https://github.com/paulscherrerinstitute/PsiSim) (2.2.0 or higher)
 * VHDL
-  * [psi\_common](https://github.com/paulscherrerinstitute/psi_common) (2.6.0 or hgiher)
+  * [psi\_common](https://github.com/paulscherrerinstitute/psi_common) (3.0.0 or hgiher)
   * [**psi\_tb**](https://github.com/paulscherrerinstitute/psi_tb)
 
 ## Tagging Policy
