@@ -443,7 +443,7 @@ package body psi_tb_i2c_pkg is
 		constant MsgInfo : MsgInfo_r := (Prefix, "I2cMasterSendRepeatedStart", Msg);
 	begin
 		-- Initial check
-		if to01X(Scl) = '1' then
+		if to_01X(Scl) = '1' then
 			LevelCheck('1', Sda, MsgInfo, "SDA must be 1 before procedure is called if SCL = 1");
 		end if;
 		
@@ -473,7 +473,7 @@ package body psi_tb_i2c_pkg is
 		constant MsgInfo : MsgInfo_r := (Prefix, "I2cMasterSendStop", Msg);
 	begin
 		-- Initial check
-		if to01X(Scl) = '1' then
+		if to_01X(Scl) = '1' then
 			LevelCheck('0', Sda, MsgInfo, "SDA must be 0 before procedure is called if SCL = 1");
 		end if;
 		
@@ -600,12 +600,12 @@ package body psi_tb_i2c_pkg is
 		constant MsgInfo : MsgInfo_r := (Prefix, "I2cSlaveWaitRepeatedStart", Msg);
 	begin
 		-- Initial Check
-		if to01X(Scl) = '1' then
+		if to_01X(Scl) = '1' then
 			LevelCheck('1', Sda, MsgInfo, "SDA must be 1 before procedure is called if SCL = 1");
 		end if;
 		
 		-- Do Check
-		if to01X(Scl) = '0' then
+		if to_01X(Scl) = '0' then
 			-- Clock stretching
 			if ClkStretch > 0 ns then
 				Scl <= '0';
@@ -633,7 +633,7 @@ package body psi_tb_i2c_pkg is
 		constant MsgInfo : MsgInfo_r := (Prefix, "I2cSlaveWaitStop", Msg);
 	begin
 		-- Initial check
-		if to01X(Scl) = '1' then
+		if to_01X(Scl) = '1' then
 			LevelCheck('0', Sda, MsgInfo, "SDA must be 0 before procedure is called if SCL = 1");
 		end if;
 		
